@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="cfg" default="gz"/>
+    <arg name="tol" default="2.5e-2"/>
+    <arg name="nb_points" default="10000"/>
+
+    <param name="/cfg_file" value="$(arg cfg)"/>
+    <param name="/tolerance" value="$(arg tol)"/>
+    <param name="/nb_points" value="$(arg nb_points)"/>
+
+    <node pkg="sdf_nmpc_ros" type="viz_sdf_node.py" name="viz_sdf_node"/>
+</launch>
