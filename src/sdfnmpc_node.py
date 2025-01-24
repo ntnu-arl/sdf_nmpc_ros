@@ -157,7 +157,7 @@ class RosWrapper:
     def cb_latent(self, msg):
         if self.x0 is not None:
             t_img = msg.header.stamp.to_sec()
-            ts, xs = list(map(list, zip(*self.state_queue)))  # tranpose
+            ts, xs = zip(*self.state_queue)  # tranpose
             x = xs[np.argmin(np.abs(np.array(ts) - t_img))]
             self.nmpc.set_latent(msg.latent.data, x[:3], quat2rot(x[3:7]))
 

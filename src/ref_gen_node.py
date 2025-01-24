@@ -24,7 +24,7 @@ class RosWrapper:
         self.pub_traj_viz = rospy.Publisher(self.cfg.ros.topics['ref_horizon_viz'], Path, tcp_nodelay=True, queue_size=1)
 
         self.sub_state = rospy.Subscriber(self.cfg.ros.topics['odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
-        self.sub_wps = rospy.Publisher(self.cfg.ros.topics['ref_wps'], Path, self.cb_wps, tcp_nodelay=True, queue_size=1)
+        self.sub_wps = rospy.Subscriber(self.cfg.ros.topics['ref_wps'], Path, self.cb_wps, tcp_nodelay=True, queue_size=1)
 
         rospy.Service(self.cfg.ros.srv['start'], SetBool, self.srv_startstop)
 
@@ -37,14 +37,13 @@ class RosWrapper:
             if len(self.wps) > 1 and np.linalg.norm(self.x0[:3] - self.wps[0]) < self.cfg.ref.wp_tol:
                 self.wps.pop(0)
 
-            ## random wps
-            while len(self.wps) < 3:
-                self.wps.append([15,0,1])
-                # vec = np.random.randn(3)
-                # vec[2] = 0
-                # vec /= np.linalg.norm(vec)
-                # random_norm = np.random.uniform(0.2, 3)
-                # self.wps.append(self.wps[-1] + vec * random_norm)
+            # ## random wps
+            # while len(self.wps) < 3:
+            #     vec = np.random.randn(3)
+            #     vec[2] = 0
+            #     vec /= np.linalg.norm(vec)
+            #     random_norm = np.random.uniform(0.2, 3)
+            #     self.wps.append(self.wps[-1] + vec * random_norm)
 
             ## plan for horizon
             self.ref_gen.x0 = self.x0
@@ -76,7 +75,7 @@ class RosWrapper:
         if self.wps:  # check if start service was called
             self.wps = []
             for pose in msg.poses:
-                self.wp.append(np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z]))
+                self.wps.append(np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z]))
 
     def cb_state(self, msg):
         pose = msg.pose.pose

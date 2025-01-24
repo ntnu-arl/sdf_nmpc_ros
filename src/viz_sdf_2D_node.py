@@ -76,7 +76,7 @@ class RosWrapper:
         ## topics
         topics = self.cfg.ros.topics
         self.sub_latent = rospy.Subscriber(topics['latent'], Latent, self.cb_latent, tcp_nodelay=True, queue_size=1)
-        self.pub_img = rospy.Publisher('/foo', Image, queue_size=1)
+        self.pub_img = rospy.Publisher(topics['img_df_viz'], Image, queue_size=1)
 
         rospy.loginfo('node viz_sdf_2d started successfully')
         rospy.spin()
