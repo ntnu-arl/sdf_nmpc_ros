@@ -4,5 +4,5 @@
 
     <param name="/cfg" value="$(arg cfg)"/>
 
-    <node pkg="sdf_nmpc_ros" type="vae_node.py" name="vae_node" output="screen"/>
+    <node pkg="sdf_nmpc_ros" type="ref_gen_node.py" name="ref_gen_node" output="screen"/>
 </launch>

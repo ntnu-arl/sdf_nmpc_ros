@@ -1,11 +1,12 @@
+import os
 import numpy as np
 from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR
 from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.vae import VaeWrapper
 import rospy
-from sensor_msgs.msg import Image
 from std_msgs.msg import Header, Float32MultiArray
-import os
+from sensor_msgs.msg import Image
+from sdf_nmpc_ros.msg import Latent
 
 
 class RosWrapper:
@@ -18,8 +19,9 @@ class RosWrapper:
         topics = self.cfg.ros.topics
         self.sub_img = rospy.Subscriber(topics['img_input'], Image, self.cb_img, tcp_nodelay=True, queue_size=1)
         self.pub_img = rospy.Publisher(topics['img_output'], Image, tcp_nodelay=True, queue_size=1)
-        self.pub_latent = rospy.Publisher(topics['latent'], Float32MultiArray, tcp_nodelay=True, queue_size=1)
+        self.pub_latent = rospy.Publisher(topics['latent'], Latent, tcp_nodelay=True, queue_size=1)
 
+        rospy.loginfo('node vae started successfully')
         rospy.spin()
 
     def cb_img(self, msg):
@@ -27,8 +29,9 @@ class RosWrapper:
         self.vae.set_img(img)
         latent = self.vae.encode()
 
-        msg_latent = Float32MultiArray()
-        msg_latent.data = latent.flatten()
+        msg_latent = Latent()
+        msg_latent.header = msg.header
+        msg_latent.latent = Float32MultiArray(data=latent.flatten())
         self.pub_latent.publish(msg_latent)
 
         msg_img = Image()
@@ -43,7 +46,7 @@ class RosWrapper:
 
 
 if __name__ == '__main__':
-    cfg_file = f'params_{rospy.get_param("/cfg_file")}.yaml'
+    cfg_file = f'params_{rospy.get_param("/cfg")}.yaml'
 
     cfg = Config(os.path.join(COLPREDMPC_CONFIG_DIR, cfg_file))
     RosWrapper(cfg)

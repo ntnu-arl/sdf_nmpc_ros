@@ -51,11 +51,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+    DIRECTORY msg
+    FILES
+    Latent.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -72,10 +72,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+    DEPENDENCIES
+    std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -164,10 +164,12 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
+    src/build_solver.py
     src/sdfnmpc_node.py
     src/ref_gen_node.py
     src/vae_node.py
-    src/viz_sdf_node.py
+    src/viz_sdf_2D_node.py
+    src/viz_sdf_3D_node.py
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

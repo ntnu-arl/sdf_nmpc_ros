@@ -4,9 +4,10 @@
     <arg name="tol" default="2.5e-2"/>
     <arg name="nb_points" default="10000"/>
 
-    <param name="/cfg_file" value="$(arg cfg)"/>
-    <param name="/tolerance" value="$(arg tol)"/>
+    <param name="/cfg" value="$(arg cfg)"/>
+    <param name="/tol" value="$(arg tol)"/>
     <param name="/nb_points" value="$(arg nb_points)"/>
 
-    <node pkg="sdf_nmpc_ros" type="viz_sdf_node.py" name="viz_sdf_node"/>
+    <node pkg="sdf_nmpc_ros" type="viz_sdf_2D_node.py" name="viz_sdf_2D_node" output="screen"/>
+    <node pkg="sdf_nmpc_ros" type="viz_sdf_3D_node.py" name="viz_sdf_3D_node" output="screen"/>
 </launch>

@@ -1,67 +1,60 @@
+import os
 import numpy as np
 from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR
 from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.controller import NMPC
-from collision_predictor_mpc.ref_gen import RefGen
-from collision_predictor_mpc.utils.math import euler2rot, quat2rot, rot2quat, quat2euler, euler2quat, quat2yaw
+from collision_predictor_mpc.utils.reference import Ref
+from collision_predictor_mpc.utils.math import quat2rot
 import rospy
 import collections
-from nav_msgs.msg import Odometry
-from std_msgs.msg import Header, Float32, Float32MultiArray
-from sensor_msgs.msg import Image
-from geometry_msgs.msg import Twist, TwistStamped, PoseStamped, Quaternion, Vector3
-from mavros_msgs.msg import PositionTarget, AttitudeTarget
-from nav_msgs.msg import Path
+from std_msgs.msg import Header, Float32
+from sdf_nmpc_ros.msg import Latent
+from geometry_msgs.msg import Twist, TwistStamped, PoseStamped
+from nav_msgs.msg import Path, Odometry
+from trajectory_msgs.msg import MultiDOFJointTrajectory
+from mavros_msgs.msg import PositionTarget
 from std_srvs.srv import Trigger, TriggerResponse, SetBool, SetBoolResponse
-import time
-import os
 
 
 class RosWrapper:
     def __init__(self, cfg):
-        rospy.init_node('nmpc')
+        rospy.init_node('sdf_nmpc')
 
         ## flags, message queues and class members
         self.cfg = cfg
         self.nmpc = NMPC(cfg)
-        self.ref_gen = RefGen(self.cfg)
         self.rate = rospy.Rate(1/self.cfg.mpc.control_loop_time*1e3)
 
-        self.start = False
-        self.goto = False
-        self.sdf_flag = False
-
         self.obs_queue = collections.deque(maxlen=1)
-        self.state_queue = collections.deque(maxlen=1)
+        self.state_queue = collections.deque(maxlen=10)
 
+        self.sdf_flag = False
         self.x0 = None
-        # self.ref = None
-        self.ref_traj = None
-        self.wps = [[0,0,1], [0,1,1], [1,1,1], [2,2,1]]
+        self.ref = None
 
         topics = self.cfg.ros.topics
         if self.cfg.flags['simulation']:
             self.pub_cmd = rospy.Publisher(topics['cmd'], Twist, tcp_nodelay=True, queue_size=1)
         if not self.cfg.flags['simulation']:
             self.pub_cmd = rospy.Publisher(topics['cmd'], PositionTarget, tcp_nodelay=True, queue_size=1)
-        self.pub_cmd_viz = rospy.Publisher(topics['cmd_viz'], TwistStamped, tcp_nodelay=False, queue_size=1)
-        self.pub_cmd_traj = rospy.Publisher(topics['traj_horizon'], Path, tcp_nodelay=False, queue_size=1)
-        self.pub_cmd_reftraj = rospy.Publisher('/nmpc/ref_horizon', Path, tcp_nodelay=False, queue_size=1)
-        self.pub_wp_dir = rospy.Publisher(topics['wp_dir'], Marker, tcp_nodelay=False, queue_size=1)
-        self.pub_cpt = rospy.Publisher(topics['cpt'], Float32, tcp_nodelay=False, queue_size=1)
-        self.pub_speed = rospy.Publisher(topics['speed'], Float32, tcp_nodelay=False, queue_size=1)
-        self.pub_sdf = rospy.Publisher(topics['sdf_pred'], Float32, tcp_nodelay=False, queue_size=1)
+        self.pub_cmd_viz = rospy.Publisher(topics['cmd_viz'], TwistStamped, tcp_nodelay=True, queue_size=1)
+        self.pub_cmd_traj = rospy.Publisher(topics['traj_horizon'], Path, tcp_nodelay=True, queue_size=1)
 
-        self.sub_latent = rospy.Subscriber(topics['latent'], Float32MultiArray, self.cb_latent, tcp_nodelay=True, queue_size=1)
+        self.pub_cpt = rospy.Publisher(topics['cpt'], Float32, tcp_nodelay=True, queue_size=1)
+        self.pub_speed = rospy.Publisher(topics['speed'], Float32, tcp_nodelay=True, queue_size=1)
+        self.pub_sdf = rospy.Publisher(topics['sdf_pred'], Float32, tcp_nodelay=True, queue_size=1)
+
+        self.sub_latent = rospy.Subscriber(topics['latent'], Latent, self.cb_latent, tcp_nodelay=True, queue_size=1)
         self.sub_state = rospy.Subscriber(topics['odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
+        self.sub_ref = rospy.Subscriber(topics['ref_horizon'], MultiDOFJointTrajectory, self.cb_ref, tcp_nodelay=True, queue_size=1)
 
-        rospy.Service(self.cfg.ros.srv['start'], SetBool, self.srv_startstop)
-        rospy.Service(self.cfg.ros.srv['goto'], Trigger, self.srv_goto)
         rospy.Service(self.cfg.ros.srv['flag'], Trigger, self.srv_sdf)
+
+        rospy.loginfo('node sdf_nmpc started successfully')
 
     def spin(self):
         while not rospy.is_shutdown():
-            if self.start:
+            if self.x0 is not None and self.ref is not None:
                 self.control_iteration()
                 self.publish_stuff()
             try:
@@ -74,33 +67,6 @@ class RosWrapper:
         ## init and solve
         self.nmpc.set_sdf_flag(self.sdf_flag)
         self.nmpc.set_x0(self.x0)
-        self.ref_gen.x0 = self.x0
-
-        ## reference
-        # p_des = [0,0,0]
-        # if not self.goto:
-        #     p_des[:] = self.x0[:3]
-        #     if not self.cfg.flags['use_current_z']:
-        #         p_des[2] = self.cfg.ref.zref
-        # else:
-        #     if self.cfg.ref.p_des_body:
-        #         p_des = p0 + np.array(quat2rot(q0) @ np.array(self.cfg.ref.p_des).reshape(-1,1)).flatten()
-        #     else:
-        #         p_des = np.array(self.cfg.ref.p_des)
-
-        if len(self.wps) > 1 and np.linalg.norm(self.x0[:3] - np.array(self.wps[0])) < 0.2:
-            self.wps = self.wps[1:]
-            vec = np.random.randn(3)
-            # vec[2] = 0
-            vec /= np.linalg.norm(vec)
-            random_norm = np.random.uniform(0.2, 3)
-            self.wps.append(vec * random_norm)
-
-        self.ref_traj = self.ref_gen.gen_ref_list_wps(self.wps)
-        # self.ref_traj = self.ref_gen.gen_ref_list_wps(self.wps[:1])
-        # self.ref_traj = self.ref_gen.gen_ref_list_wps([p_des])
-        for k, ref in enumerate(self.ref_traj):
-            self.nmpc.set_ref(ref, k)
 
         fail_count = self.nmpc.solve()
         if self.cfg.mpc.max_solver_fail and fail_count == self.cfg.mpc.max_solver_fail:
@@ -120,26 +86,6 @@ class RosWrapper:
         self.pub_cpt.publish(Float32(self.nmpc.ocp.get_t()))
         ## neural sdf value
         self.pub_sdf.publish(Float32(self.nmpc.eval(0)[0]))
-
-        ## predicted ref traj
-        msg = Path()
-        msg.header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.world)
-        for p in [self.x0[:3]] + self.wps:
-        # for r in self.ref_traj:
-            pose = PoseStamped()
-            pose.header = msg.header
-            # pose.pose.position.x = r.p[0]
-            # pose.pose.position.y = r.p[1]
-            # pose.pose.position.z = r.p[2]
-            pose.pose.position.x = p[0]
-            pose.pose.position.y = p[1]
-            pose.pose.position.z = p[2]
-            pose.pose.orientation.w = 1
-            pose.pose.orientation.x = 0
-            pose.pose.orientation.y = 0
-            pose.pose.orientation.z = 0
-            msg.poses.append(pose)
-        self.pub_cmd_reftraj.publish(msg)
 
         ## predicted traj
         msg = Path()
@@ -190,9 +136,30 @@ class RosWrapper:
         msg_viz.twist.angular.z = commands[3]
         self.pub_cmd_viz.publish(msg_viz)
 
+    def cb_ref(self, msg):
+        if self.ref is None:
+            rospy.loginfo('first reference received, starting mpc')
+            self.ref = Ref(cfg)
+        for k, pose in enumerate(msg.points):
+            self.ref.p[0] = pose.transforms[0].translation.x
+            self.ref.p[1] = pose.transforms[0].translation.y
+            self.ref.p[2] = pose.transforms[0].translation.z
+            self.ref.qz[0] = pose.transforms[0].rotation.w
+            self.ref.qz[1] = pose.transforms[0].rotation.x
+            self.ref.qz[2] = pose.transforms[0].rotation.y
+            self.ref.qz[3] = pose.transforms[0].rotation.z
+            self.ref.v[0] = pose.velocities[0].linear.x
+            self.ref.v[1] = pose.velocities[0].linear.y
+            self.ref.v[2] = pose.velocities[0].linear.z
+            self.ref.wz = pose.velocities[0].angular.z
+            self.nmpc.set_ref(self.ref, k)
+
     def cb_latent(self, msg):
         if self.x0 is not None:
-            self.nmpc.set_latent(msg.data, self.x0[:3], quat2rot(self.x0[3:7]))
+            t_img = msg.header.stamp.to_sec()
+            ts, xs = list(map(list, zip(*self.state_queue)))  # tranpose
+            x = xs[np.argmin(np.abs(np.array(ts) - t_img))]
+            self.nmpc.set_latent(msg.latent.data, x[:3], quat2rot(x[3:7]))
 
     def cb_state(self, msg):
         pose = msg.pose.pose
@@ -205,18 +172,10 @@ class RosWrapper:
         B_w_B = [avel.x, avel.y, avel.z]
 
         self.x0 = np.concatenate([W_p_B, W_q_B, B_v_B, B_w_B])
-        # self.state_queue.appendleft(np.concatenate([W_p_B, W_R_B, B_v_B, B_w_B]))
-
-    def srv_startstop(self, msg):
-        self.start = msg.data
-        return SetBoolResponse(success=True, message='')
-
-    def srv_goto(self, msg):
-        self.goto = not self.goto
-        return TriggerResponse(success=True, message='')
+        self.state_queue.appendleft((msg.header.stamp.to_sec(), self.x0.copy()))
 
     def srv_sdf(self, msg):
-        if (self.nmpc.p[:,self.cfg.mpc.p_idx.W_p_Co]).any():
+        if (self.nmpc.p[0,self.cfg.mpc.p_idx.W_p_Co]).any():
             self.sdf_flag = not self.sdf_flag
             return TriggerResponse(success=True, message='')
         else:
@@ -225,7 +184,7 @@ class RosWrapper:
 
 if __name__ == '__main__':
     np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)
-    cfg_file = rospy.get_param('/cfg_file')
+    cfg_file = f'params_{rospy.get_param("/cfg")}.yaml'
 
     cfg = Config(os.path.join(COLPREDMPC_CONFIG_DIR, cfg_file))
     ros_wrapper = RosWrapper(cfg)
