@@ -2,7 +2,9 @@ import os
 import numpy as np
 from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR
 from collision_predictor_mpc.utils.config import Config
+from collision_predictor_mpc.utils.reference import Wp
 from collision_predictor_mpc.ref_gen import RefGen
+from collision_predictor_mpc.utils.math import yaw2quat
 import rospy
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseStamped, Transform, Twist, Quaternion, Vector3
@@ -25,6 +27,7 @@ class RosWrapper:
 
         self.sub_state = rospy.Subscriber(self.cfg.ros.topics['odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
         self.sub_wps = rospy.Subscriber(self.cfg.ros.topics['ref_wps'], Path, self.cb_wps, tcp_nodelay=True, queue_size=1)
+        # self.sub_joystick = rospy.Subscriber(topics['joystick'], Twist, self.cb_joystick, tcp_nodelay=True, queue_size=1)
 
         rospy.Service(self.cfg.ros.srv['start'], SetBool, self.srv_startstop)
 
@@ -34,7 +37,7 @@ class RosWrapper:
     def replan(self):
         if self.wps:
             ## depopulate wp if close enough
-            if len(self.wps) > 1 and np.linalg.norm(self.x0[:3] - self.wps[0]) < self.cfg.ref.wp_tol:
+            if len(self.wps) > 1 and np.linalg.norm(self.x0[:3] - self.wps[0].p) < self.cfg.ref.wp_tol:
                 self.wps.pop(0)
 
             # ## random wps
@@ -43,7 +46,7 @@ class RosWrapper:
             #     vec[2] = 0
             #     vec /= np.linalg.norm(vec)
             #     random_norm = np.random.uniform(0.2, 3)
-            #     self.wps.append(self.wps[-1] + vec * random_norm)
+            #     self.wps.append(Wp(self.wps[-1].p + vec * random_norm, yaw2quat(np.random.uniform(-np.pi, np.pi))))
 
             ## plan for horizon
             self.ref_gen.x0 = self.x0
@@ -68,14 +71,17 @@ class RosWrapper:
                 pose.pose.position = pos
                 pose.pose.orientation = rot
                 msg_viz.poses.append(pose)
-                self.pub_traj.publish(msg)
+            self.pub_traj.publish(msg)
             self.pub_traj_viz.publish(msg_viz)
 
     def cb_wps(self, msg):
         if self.wps:  # check if start service was called
             self.wps = []
             for pose in msg.poses:
-                self.wps.append(np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z]))
+                self.wps.append(Wp(
+                    [pose.pose.position.x, pose.pose.position.y, pose.pose.position.z],
+                    [pose.pose.orientation.w, pose.pose.orientation.x, pose.pose.orientation.y, pose.pose.orientation.z]
+                ))
 
     def cb_state(self, msg):
         pose = msg.pose.pose
@@ -95,7 +101,7 @@ class RosWrapper:
             p_hover = self.x0[:3]
             if not self.cfg.ref.use_current_z:
                 p_hover[2] = cfg.ref.zref
-            self.wps = [np.array(p_hover)]
+            self.wps = [Wp(p_hover)]
             rospy.loginfo(f'start service received, hovering at {p_hover}')
         elif not msg.data:
             self.wps = []
