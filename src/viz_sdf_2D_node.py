@@ -6,12 +6,14 @@ from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR, COLPREDMPC_TMP_DIR
 from collision_predictor_mpc.controller import NMPC
 from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.utils.pos_sampler import PosSampler
+from collision_predictor_mpc.utils.math import quat2rot
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import rospy
 from std_msgs.msg import Header
 from sdf_nmpc_ros.msg import Latent
 from sensor_msgs.msg import Image
+from nav_msgs.msg import Path
 
 
 class RosWrapper:
@@ -46,20 +48,26 @@ class RosWrapper:
         self.fig = plt.figure(figsize=(3,3), dpi=300)
         self.ax = self.fig.subplots(nrows=1, ncols=1)
         self.ax.invert_xaxis()
-        # self.ax.set_xlim([-self.dlim, self.dlim])
         self.ax.set_xticks(list(np.arange(-self.dlim, self.dlim+0.01, self.tick_space)) + [0])
-        # self.ax.set_ylim([0, self.dlim])
         self.ax.set_yticks(np.arange(-self.dlim, self.dlim+0.01, self.tick_space))
-        # self.ax.set_ylim([-self.dlim, self.dlim])
-        # self.ax.set_yticks(np.arange(-self.dlim, self.dlim+0.01, self.tick_space))
         self.ax.set_aspect('equal')
         self.ax.set_axisbelow(True)
         self.ax.grid(color='gray', linestyle='dashed', alpha=0.7)
         self.ax.set_xlabel(r'y axis [m]', fontfamily='serif')
         self.ax.set_ylabel(r'x axis [m]', fontfamily='serif')
-        self.ax.scatter(0, 0, color='k', marker='o', s=50)
+        self.ax.scatter(0, 0, color='k', marker='o', s=30, zorder=5)
 
-        self.data = [None, None, None]
+        ## contour data (cannot be updated dynamically)
+        self.data_contour = [None, None, None]
+
+        ## ref / traj plots data
+        self.data_ref, = self.ax.plot([], [], '-', color='black', linewidth=1.5, markersize=5, zorder=3)
+        self.data_traj, = self.ax.plot([], [], '-', color='green', linewidth=2, markersize=7, zorder=4)
+
+        ## data structures
+        self.points_sdf = None
+        self.path_ref = None
+        self.path_traj = None
 
         ## colorbar setup
         # plt.subplots_adjust(left=0.25)
@@ -74,38 +82,37 @@ class RosWrapper:
         # self.cbar_ax.set_label(r'Neural SDF [m]')
 
         ## topics
-        topics = self.cfg.ros.topics
-        self.sub_latent = rospy.Subscriber(topics['latent'], Latent, self.cb_latent, tcp_nodelay=True, queue_size=1)
-        self.pub_img = rospy.Publisher(topics['img_df_viz'], Image, queue_size=1)
+        self.sub_latent = rospy.Subscriber(self.cfg.ros.topics['latent'], Latent, self.cb_latent, tcp_nodelay=True, queue_size=1)
+        self.sub_ref = rospy.Subscriber(self.cfg.ros.topics.viz['ref_horizon'], Path, self.cb_path_ref, tcp_nodelay=True, queue_size=1)
+        self.sub_traj = rospy.Subscriber(self.cfg.ros.topics.viz['traj_horizon'], Path, self.cb_path_traj, tcp_nodelay=True, queue_size=1)
+        self.pub_img = rospy.Publisher(self.cfg.ros.topics.viz['img_df'], Image, queue_size=1)
 
         rospy.loginfo('node viz_sdf_2d started successfully')
         rospy.spin()
 
-    def gen_image(self, sdf):
-        [c.remove() for contour in self.data if contour is not None for c in contour.collections ]
-        self.data[0] = self.ax.contourf(self.y, self.x, sdf.reshape(self.shape_grid).T, levels=self.fcontour_levels, vmin=-self.max_df, vmax=self.max_df, cmap='magma')
-        self.data[1] = self.ax.contourf(self.y, self.x, sdf.reshape(self.shape_grid).T, levels=[-self.lvl_tol,self.lvl_tol], colors='white')
-        self.data[2] = self.ax.contourf(self.y, self.x, sdf.reshape(self.shape_grid).T, levels=[self.lvlset-self.lvl_tol,self.lvlset+self.lvl_tol], colors='blue')
+    def gen_image(self):
+        if self.points_sdf is not None:
+            [c.remove() for contour in self.data_contour if contour is not None for c in contour.collections]
+            self.data_contour[0] = self.ax.contourf(self.y, self.x, self.points_sdf, levels=self.fcontour_levels, vmin=-self.max_df, vmax=self.max_df, cmap='magma', zorder=0)
+            self.data_contour[1] = self.ax.contourf(self.y, self.x, self.points_sdf, levels=[-self.lvl_tol,self.lvl_tol], colors='white', zorder=1)
+            self.data_contour[2] = self.ax.contourf(self.y, self.x, self.points_sdf, levels=[self.lvlset-self.lvl_tol,self.lvlset+self.lvl_tol], colors='blue', zorder=2)
 
+            if self.path_ref is not None:
+                self.data_ref.set_xdata(self.path_ref[1,:])
+                self.data_ref.set_ydata(self.path_ref[0,:])
+            if self.path_traj is not None:
+                self.data_traj.set_xdata(self.path_traj[1,:])
+                self.data_traj.set_ydata(self.path_traj[0,:])
 
-        self.fig.tight_layout()
-        io_buf = io.BytesIO()
-        self.fig.savefig(io_buf, format='raw', transparent=True)
-        io_buf.seek(0)
-        img = np.frombuffer(io_buf.getvalue(), dtype=np.uint8).reshape((int(self.fig.bbox.bounds[3]), int(self.fig.bbox.bounds[2]), -1))
-        io_buf.close()
+            self.fig.tight_layout()
+            io_buf = io.BytesIO()
+            self.fig.savefig(io_buf, format='raw', transparent=True)
+            io_buf.seek(0)
+            img = np.frombuffer(io_buf.getvalue(), dtype=np.uint8).reshape((int(self.fig.bbox.bounds[3]), int(self.fig.bbox.bounds[2]), -1))
+            io_buf.close()
 
-        return np.stack((img[:,:,2], img[:,:,1], img[:,:,0]), axis=2)
+            img = np.stack((img[:,:,2], img[:,:,1], img[:,:,0]), axis=2)  # bgr
 
-    def cb_latent(self, msg):
-        with torch.no_grad():
-            latent = torch.tensor(msg.latent.data, dtype=torch.float32, device=self.cfg.nn.vae_device).reshape(1, -1)
-            points_sdf = self.sdf(torch.hstack([self.points, latent.repeat(self.nb_points, 1)])).flatten().cpu()
-
-            img = self.gen_image(points_sdf)
-
-
-            ## publish
             msg = Image()
             msg.header = msg.header
             msg.height = img.shape[0]
@@ -115,6 +122,32 @@ class RosWrapper:
             msg.data = img.tobytes()
             self.pub_img.publish(msg)
 
+    def cb_path_ref(self, msg):
+        traj = []
+        W_p_B0 = np.array([msg.poses[0].pose.position.x, msg.poses[0].pose.position.y, msg.poses[0].pose.position.z])
+        B0_R_W = quat2rot(np.array([msg.poses[0].pose.orientation.w, msg.poses[0].pose.orientation.x, msg.poses[0].pose.orientation.y, msg.poses[0].pose.orientation.z])).T
+        for p in msg.poses:
+            W_p = np.array([p.pose.position.x, p.pose.position.y, p.pose.position.z])
+            B0_p = B0_R_W @ (W_p - W_p_B0)
+            traj.append(B0_p)
+        self.path_ref = np.array(traj).T
+
+    def cb_path_traj(self, msg):
+        traj = []
+        W_p_B0 = np.array([msg.poses[0].pose.position.x, msg.poses[0].pose.position.y, msg.poses[0].pose.position.z])
+        B0_R_W = quat2rot(np.array([msg.poses[0].pose.orientation.w, msg.poses[0].pose.orientation.x, msg.poses[0].pose.orientation.y, msg.poses[0].pose.orientation.z])).T
+        for p in msg.poses:
+            W_p = np.array([p.pose.position.x, p.pose.position.y, p.pose.position.z])
+            B0_p = B0_R_W @ (W_p - W_p_B0)
+            traj.append(B0_p)
+        self.path_traj = np.array(traj).T
+
+    def cb_latent(self, msg):
+        with torch.no_grad():
+            latent = torch.tensor(msg.latent.data, dtype=torch.float32, device=self.cfg.nn.vae_device).reshape(1, -1)
+            self.points_sdf = self.sdf(torch.hstack([self.points, latent.repeat(self.nb_points, 1)])).flatten().cpu().reshape(self.shape_grid).T
+
+        self.gen_image()
 
 if __name__ == '__main__':
     np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)

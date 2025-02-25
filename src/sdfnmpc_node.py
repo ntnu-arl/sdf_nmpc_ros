@@ -37,12 +37,13 @@ class RosWrapper:
             self.pub_cmd = rospy.Publisher(topics['cmd'], Twist, tcp_nodelay=True, queue_size=1)
         if not self.cfg.flags['simulation']:
             self.pub_cmd = rospy.Publisher(topics['cmd'], PositionTarget, tcp_nodelay=True, queue_size=1)
-        self.pub_cmd_viz = rospy.Publisher(topics['cmd_viz'], TwistStamped, tcp_nodelay=True, queue_size=1)
-        self.pub_cmd_traj = rospy.Publisher(topics['traj_horizon'], Path, tcp_nodelay=True, queue_size=1)
 
-        self.pub_cpt = rospy.Publisher(topics['cpt'], Float32, tcp_nodelay=True, queue_size=1)
-        self.pub_speed = rospy.Publisher(topics['speed'], Float32, tcp_nodelay=True, queue_size=1)
-        self.pub_sdf = rospy.Publisher(topics['sdf_pred'], Float32, tcp_nodelay=True, queue_size=1)
+        self.pub_cpt = rospy.Publisher(topics.output['cpt'], Float32, tcp_nodelay=True, queue_size=1)
+        self.pub_speed = rospy.Publisher(topics.output['speed'], Float32, tcp_nodelay=True, queue_size=1)
+        self.pub_sdf = rospy.Publisher(topics.output['sdf_pred'], Float32, tcp_nodelay=True, queue_size=1)
+
+        self.pub_cmd_viz = rospy.Publisher(topics.viz['cmd'], TwistStamped, tcp_nodelay=True, queue_size=1)
+        self.pub_cmd_traj = rospy.Publisher(topics.viz['traj_horizon'], Path, tcp_nodelay=True, queue_size=1)
 
         self.sub_latent = rospy.Subscriber(topics['latent'], Latent, self.cb_latent, tcp_nodelay=True, queue_size=1)
         self.sub_state = rospy.Subscriber(topics['odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)

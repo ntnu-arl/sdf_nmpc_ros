@@ -8,5 +8,5 @@
     <param name="/tol" value="$(arg tol)"/>
     <param name="/nb_points" value="$(arg nb_points)"/>
 
-    <node pkg="sdf_nmpc_ros" type="viz_sdf_2D_node.py" name="viz_sdf_3D_node" output="screen"/>
+    <node pkg="sdf_nmpc_ros" type="viz_sdf_3D_node.py" name="viz_sdf_3D_node" output="screen"/>
 </launch>

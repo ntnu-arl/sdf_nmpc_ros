@@ -24,7 +24,7 @@ class RosWrapper:
         self.cmd_joy = []
 
         self.pub_traj = rospy.Publisher(self.cfg.ros.topics['ref_horizon'], MultiDOFJointTrajectory, tcp_nodelay=True, queue_size=1)
-        self.pub_traj_viz = rospy.Publisher(self.cfg.ros.topics['ref_horizon_viz'], Path, tcp_nodelay=True, queue_size=1)
+        self.pub_traj_viz = rospy.Publisher(self.cfg.ros.topics.viz['ref_horizon'], Path, tcp_nodelay=True, queue_size=1)
 
         self.sub_state = rospy.Subscriber(self.cfg.ros.topics['odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
         self.sub_wps = rospy.Subscriber(self.cfg.ros.topics['ref_wps'], Path, self.cb_wps, tcp_nodelay=True, queue_size=1)
