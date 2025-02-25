@@ -169,8 +169,10 @@ class RosWrapper:
         W_p_B = [pose.position.x, pose.position.y, pose.position.z]
         W_q_B = [pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z]
         B_v_B = [vel.x, vel.y, vel.z]
+        W_v_B = quat2rot(W_q_B) @ B_v_B
         B_w_B = [avel.x, avel.y, avel.z]
 
+        # self.x0 = np.concatenate([W_p_B, W_q_B, W_v_B, B_w_B])
         self.x0 = np.concatenate([W_p_B, W_q_B, B_v_B, B_w_B])
         self.state_queue.appendleft((msg.header.stamp.to_sec(), self.x0.copy()))
 

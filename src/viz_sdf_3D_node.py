@@ -43,7 +43,7 @@ class RosWrapper:
         rospy.loginfo('node viz_sdf_3d started successfully')
         rospy.spin()
 
-    def pc_to_msg(self, header, pc, norm=0.0, val=0.0):
+    def pc_to_msg(self, ts, pc, norm=0.0, val=0.0):
         data = np.zeros([pc.shape[0], 5], dtype=np.float32)
         data[:, :3] = pc
         data[:, 3] = norm
@@ -56,7 +56,7 @@ class RosWrapper:
             PointField(name='intensity', offset=16, datatype=PointField.FLOAT32, count=1),
         ]
 
-        header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.sensor)
+        header = Header(stamp=ts, frame_id=self.cfg.ros.frames.sensor)
         return point_cloud2.create_cloud(header, fields, data)
 
     def cb_latent(self, msg):
@@ -70,7 +70,7 @@ class RosWrapper:
             norms = torch.norm(pc_lvlset, dim=1)
 
             ## publish
-            msg = self.pc_to_msg(msg.header, pc_lvlset.cpu().numpy(), norm=norms.cpu().numpy())
+            msg = self.pc_to_msg(msg.header.stamp, pc_lvlset.cpu().numpy(), norm=norms.cpu().numpy())
             self.pub_pc.publish(msg)
 
 
