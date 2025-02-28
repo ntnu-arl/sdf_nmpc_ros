@@ -9,9 +9,9 @@
     <arg name="viz_3d" default="false"/>
 
     <param name="/cfg" value="$(arg cfg)"/>
+    <param name="/rebuild" value="$(arg rebuild)"/>
 
     <!-- SDF NMPC -->
-    <node if="$(arg rebuild)" pkg="sdf_nmpc_ros" type="build_solver.py" name="build_solver" output="screen" />
     <node pkg="sdf_nmpc_ros" type="sdfnmpc_node.py" name="sdfnmpc_node" output="screen"/>
 
     <!-- reference generator -->
