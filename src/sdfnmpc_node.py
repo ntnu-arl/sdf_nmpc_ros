@@ -5,11 +5,12 @@ from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.controller import NMPC
 from collision_predictor_mpc.utils.reference import Ref
 from collision_predictor_mpc.utils.math import quat2rot
+from collision_predictor_mpc.gen_model import build
 import rospy
 import collections
 from std_msgs.msg import Header, Float32
 from sdf_nmpc_ros.msg import Latent
-from geometry_msgs.msg import Twist, TwistStamped, PoseStamped
+from geometry_msgs.msg import Twist, TwistStamped, PoseStamped, Vector3, Quaternion
 from nav_msgs.msg import Path, Odometry
 from trajectory_msgs.msg import MultiDOFJointTrajectory
 from mavros_msgs.msg import PositionTarget
@@ -25,7 +26,6 @@ class RosWrapper:
         self.nmpc = NMPC(cfg)
         self.rate = rospy.Rate(1/self.cfg.mpc.control_loop_time*1e3)
 
-        self.obs_queue = collections.deque(maxlen=1)
         self.state_queue = collections.deque(maxlen=10)
 
         self.sdf_flag = False
@@ -91,16 +91,12 @@ class RosWrapper:
         ## predicted traj
         msg = Path()
         msg.header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.world)
-        for p, q in self.nmpc.get_openloop_traj():
+        traj = self.nmpc.get_openloop_traj()
+        for p, q in traj:
             pose = PoseStamped()
             pose.header = msg.header
-            pose.pose.position.x = p[0]
-            pose.pose.position.y = p[1]
-            pose.pose.position.z = p[2]
-            pose.pose.orientation.w = q[0]
-            pose.pose.orientation.x = q[1]
-            pose.pose.orientation.y = q[2]
-            pose.pose.orientation.z = q[3]
+            pose.pose.position = Vector3(*p)
+            pose.pose.orientation = Quaternion(*q[1:], q[0])
             msg.poses.append(pose)
         self.pub_cmd_traj.publish(msg)
 
@@ -173,8 +169,7 @@ class RosWrapper:
         W_v_B = quat2rot(W_q_B) @ B_v_B
         B_w_B = [avel.x, avel.y, avel.z]
 
-        # self.x0 = np.concatenate([W_p_B, W_q_B, W_v_B, B_w_B])
-        self.x0 = np.concatenate([W_p_B, W_q_B, B_v_B, B_w_B])
+        self.x0 = np.concatenate([W_p_B, W_q_B, W_v_B, B_w_B])
         self.state_queue.appendleft((msg.header.stamp.to_sec(), self.x0.copy()))
 
     def srv_sdf(self, msg):
@@ -188,6 +183,12 @@ class RosWrapper:
 if __name__ == '__main__':
     np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)
     cfg_file = f'params_{rospy.get_param("/cfg")}.yaml'
+
+    if rospy.get_param("/rebuild"):
+        path = os.path.join(COLPREDMPC_CONFIG_DIR, cfg_file)
+        rospy.loginfo(f'building solver for {path}')
+        build(path)
+        rospy.loginfo(f'solver built')
 
     cfg = Config(os.path.join(COLPREDMPC_CONFIG_DIR, cfg_file))
     ros_wrapper = RosWrapper(cfg)

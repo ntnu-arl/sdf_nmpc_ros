@@ -63,7 +63,7 @@ class RosWrapper:
                     rospy.Duration.from_sec(0)
                 ))
                 pose = PoseStamped()
-                pose.header = msg.header
+                pose.header = msg_viz.header
                 pose.pose.position = pos
                 pose.pose.orientation = rot
                 msg_viz.poses.append(pose)
