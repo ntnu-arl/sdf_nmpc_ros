@@ -170,6 +170,7 @@ catkin_install_python(PROGRAMS
     src/vae_node.py
     src/viz_sdf_2D_node.py
     src/viz_sdf_3D_node.py
+    src/viz_vae_node.py
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

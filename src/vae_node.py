@@ -20,7 +20,6 @@ class RosWrapper:
         self.sub_img = rospy.Subscriber(topics['obs'], Image, self.cb_img, tcp_nodelay=True, queue_size=1)
         self.pub_latent = rospy.Publisher(topics['latent'], Latent, tcp_nodelay=True, queue_size=1)
         self.pub_sdf = rospy.Publisher(topics.output['sdf_true'], Float32, tcp_nodelay=True, queue_size=1)
-        self.pub_img = rospy.Publisher(topics.viz['img_vae'], Image, tcp_nodelay=True, queue_size=1)
 
         rospy.loginfo('node vae started successfully')
         rospy.spin()
@@ -37,16 +36,6 @@ class RosWrapper:
         msg_latent.header = msg.header
         msg_latent.latent = Float32MultiArray(data=latent.flatten())
         self.pub_latent.publish(msg_latent)
-
-        msg_img = Image()
-        msg_img.header = msg.header
-        msg_img.height = msg.height
-        msg_img.width = msg.width
-        msg_img.encoding = '8UC1'
-        msg_img.step = msg.width
-        msg_img.data = (self.vae.decode() * 255).astype('uint8').tobytes()
-
-        self.pub_img.publish(msg_img)
 
 
 if __name__ == '__main__':
