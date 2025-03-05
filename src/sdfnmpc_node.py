@@ -28,6 +28,7 @@ class RosWrapper:
 
         self.state_queue = collections.deque(maxlen=10)
 
+        self.failed = True
         self.sdf_flag = False
         self.x0 = None
         self.ref = None
@@ -78,13 +79,11 @@ class RosWrapper:
         fail_count = self.nmpc.solve()
         if self.cfg.mpc.max_solver_fail and fail_count == self.cfg.mpc.max_solver_fail:
             rospy.logwarn('NMPC FAILED. SENDING HOVER COMMAND.')
-            self.send_commands(self.nmpc.cmd_hover)
-            self.start = False
-            self.goto = False
+            self.failed = True
             self.sdf_flag = False
             self.nmpc.reset()
-            p_hover = None
-            p_des = None
+        else:
+            self.failed = False
 
     def publish_stuff(self):
         ## speed
@@ -107,8 +106,8 @@ class RosWrapper:
         self.pub_cmd_traj.publish(msg)
 
         ## command
-        cmd_Vacc = self.nmpc.get_cmd_Vacc()
-        cmd_TRPYr = self.nmpc.get_cmd_TRPYr()
+        cmd_Vacc = self.nmpc.get_cmd_Vacc() if not self.failed else self.nmpc.cmd_Vacc_hover
+        cmd_TRPYr = self.nmpc.get_cmd_TRPYr() if not self.failed else self.nmpc.cmd_TRPYr_hover
         if self.cfg.flags['simulation']:
             if self.cfg.control_interface == 'Vacc':
                 msg = Twist()
