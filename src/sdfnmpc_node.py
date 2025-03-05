@@ -5,7 +5,7 @@ from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.controller import NMPC
 from collision_predictor_mpc.utils.reference import Ref
 from collision_predictor_mpc.utils.math import quat2rot, euler2rot, quat2yaw
-from collision_predictor_mpc.gen_model import build
+from collision_predictor_mpc.ocp import build_solver
 import rospy
 import collections
 from std_msgs.msg import Header, Float32
@@ -187,10 +187,11 @@ if __name__ == '__main__':
     np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)
     cfg_file = f'params_{rospy.get_param("/cfg")}.yaml'
 
-    if rospy.get_param("/rebuild"):
+    if rospy.get_param('/rebuild'):
         path = os.path.join(COLPREDMPC_CONFIG_DIR, cfg_file)
+
         rospy.loginfo(f'building solver for {path}')
-        build(path)
+        build_solver(path)
         rospy.loginfo(f'solver built')
 
     cfg = Config(os.path.join(COLPREDMPC_CONFIG_DIR, cfg_file))

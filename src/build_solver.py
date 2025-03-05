@@ -1,7 +1,7 @@
 import os
 import rospy
 from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR
-from collision_predictor_mpc.gen_model import build
+from collision_predictor_mpc.ocp import build_solver
 
 
 if __name__ == '__main__':
@@ -9,6 +9,6 @@ if __name__ == '__main__':
     path = os.path.join(COLPREDMPC_CONFIG_DIR, cfg_file)
 
     rospy.loginfo(f'building solver for {path}')
-    build(path)
+    build_solver(path)
     rospy.loginfo(f'solver built')
     exit(0)

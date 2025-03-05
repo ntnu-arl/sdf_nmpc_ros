@@ -1,16 +1,13 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 0
+    Help Height: 70
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /odometry1
-        - /odometry1/axes1/Shape1
-        - /odometry1/msf1/Shape1
-        - /odometry1/mavros1/Shape1
-        - /pointclouds1/depth x_colored1/Autocompute Value Bounds1
-      Splitter Ratio: 0.5047619342803955
-    Tree Height: 410
+        - /odometry1/Shape1
+        - /odometry_drifted1/Shape1
+      Splitter Ratio: 0.5147058963775635
+    Tree Height: 265
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -28,7 +25,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: input depth
+    SyncSource: depth
   - Class: rviz_nmpc_plugin/RMF NMPC
     Name: RMF NMPC
 Preferences:
@@ -46,194 +43,128 @@ Visualization Manager:
       Line Style:
         Line Width: 0.029999999329447746
         Value: Lines
-      Name: Grid
+      Name: grid
       Normal Cell Count: 0
       Offset:
         X: 0
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 100
+      Plane Cell Count: 30
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
       Class: rviz/Axes
       Enabled: true
-      Length: 1
-      Name: world axes
+      Length: 2
+      Name: world_axis
       Radius: 0.009999999776482582
       Reference Frame: <Fixed Frame>
       Show Trail: false
       Value: true
-    - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: /nmpc/body_marker
-      Name: robot
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/Group
-      Displays:
-        - Angle Tolerance: 0.009999999776482582
-          Class: rviz/Odometry
-          Covariance:
-            Orientation:
-              Alpha: 0.5
-              Color: 255; 255; 127
-              Color Style: Unique
-              Frame: Local
-              Offset: 1
-              Scale: 1
-              Value: true
-            Position:
-              Alpha: 0.30000001192092896
-              Color: 204; 51; 204
-              Scale: 1
-              Value: true
-            Value: false
-          Enabled: true
-          Keep: 1
-          Name: axes
-          Position Tolerance: 0.009999999776482582
-          Queue Size: 10
-          Shape:
-            Alpha: 1
-            Axes Length: 0.5
-            Axes Radius: 0.05000000074505806
-            Color: 98; 160; 234
-            Head Length: 0.30000001192092896
-            Head Radius: 0.10000000149011612
-            Shaft Length: 0.5
-            Shaft Radius: 0.05000000074505806
-            Value: Axes
-          Topic: /rovio/odometry
-          Unreliable: false
+    - Angle Tolerance: 0.05000000074505806
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
           Value: true
-        - Class: jsk_rviz_plugin/TFTrajectory
-          Enabled: false
-          Name: path
-          Value: false
-          color: 246; 245; 244
-          duration: 1000
-          frame: body
-          line_width: 0.029999999329447746
-        - Angle Tolerance: 0.009999999776482582
-          Class: rviz/Odometry
-          Covariance:
-            Orientation:
-              Alpha: 0.5
-              Color: 255; 255; 127
-              Color Style: Unique
-              Frame: Local
-              Offset: 1
-              Scale: 1
-              Value: true
-            Position:
-              Alpha: 0.30000001192092896
-              Color: 204; 51; 204
-              Scale: 1
-              Value: true
-            Value: false
-          Enabled: true
-          Keep: 1
-          Name: msf
-          Position Tolerance: 0.009999999776482582
-          Queue Size: 10
-          Shape:
-            Alpha: 1
-            Axes Length: 0.5
-            Axes Radius: 0.05000000074505806
-            Color: 51; 209; 122
-            Head Length: 0.30000001192092896
-            Head Radius: 0.10000000149011612
-            Shaft Length: 1
-            Shaft Radius: 0.05000000074505806
-            Value: Arrow
-          Topic: /msf_core/odometry
-          Unreliable: false
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
           Value: true
-        - Angle Tolerance: 0.009999999776482582
-          Class: rviz/Odometry
-          Covariance:
-            Orientation:
-              Alpha: 0.5
-              Color: 255; 255; 127
-              Color Style: Unique
-              Frame: Local
-              Offset: 1
-              Scale: 1
-              Value: true
-            Position:
-              Alpha: 0.30000001192092896
-              Color: 204; 51; 204
-              Scale: 1
-              Value: true
-            Value: false
-          Enabled: true
-          Keep: 1
-          Name: rovio
-          Position Tolerance: 0.009999999776482582
-          Queue Size: 10
-          Shape:
-            Alpha: 1
-            Axes Length: 0.5
-            Axes Radius: 0.05000000074505806
-            Color: 246; 97; 81
-            Head Length: 0.30000001192092896
-            Head Radius: 0.10000000149011612
-            Shaft Length: 1
-            Shaft Radius: 0.05000000074505806
-            Value: Arrow
-          Topic: /rovio/odometry
-          Unreliable: false
-          Value: true
-        - Angle Tolerance: 0.009999999776482582
-          Class: rviz/Odometry
-          Covariance:
-            Orientation:
-              Alpha: 0.5
-              Color: 255; 255; 127
-              Color Style: Unique
-              Frame: Local
-              Offset: 1
-              Scale: 1
-              Value: true
-            Position:
-              Alpha: 0.30000001192092896
-              Color: 204; 51; 204
-              Scale: 1
-              Value: true
-            Value: false
-          Enabled: true
-          Keep: 1
-          Name: mavros
-          Position Tolerance: 0.009999999776482582
-          Queue Size: 10
-          Shape:
-            Alpha: 1
-            Axes Length: 0.5
-            Axes Radius: 0.05000000074505806
-            Color: 98; 160; 234
-            Head Length: 0.30000001192092896
-            Head Radius: 0.10000000149011612
-            Shaft Length: 1
-            Shaft Radius: 0.05000000074505806
-            Value: Arrow
-          Topic: /mavros/local_position/odom
-          Unreliable: false
-          Value: true
+        Value: false
       Enabled: true
+      Keep: 1
       Name: odometry
-    - Alpha: 2
+      Position Tolerance: 0.009999999776482582
+      Queue Size: 10
+      Shape:
+        Alpha: 1
+        Axes Length: 0.5
+        Axes Radius: 0.05000000074505806
+        Color: 255; 163; 72
+        Head Length: 0.20000000298023224
+        Head Radius: 0.10000000149011612
+        Shaft Length: 0.30000001192092896
+        Shaft Radius: 0.05000000074505806
+        Value: Arrow
+      Topic: /rmf_owl/odom
+      Unreliable: false
+      Value: true
+    - Angle Tolerance: 0.05000000074505806
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: false
+      Enabled: true
+      Keep: 1
+      Name: odometry_drifted
+      Position Tolerance: 0.009999999776482582
+      Queue Size: 10
+      Shape:
+        Alpha: 1
+        Axes Length: 0.5
+        Axes Radius: 0.05000000074505806
+        Color: 255; 25; 0
+        Head Length: 0.20000000298023224
+        Head Radius: 0.10000000149011612
+        Shaft Length: 0.30000001192092896
+        Shaft Radius: 0.05000000074505806
+        Value: Arrow
+      Topic: /rmf_owl/drift_odom
+      Unreliable: false
+      Value: true
+    - Alpha: 0.699999988079071
       Buffer Length: 1
       Class: rviz/Path
-      Color: 255; 85; 255
+      Color: 98; 160; 234
       Enabled: true
-      Head Diameter: 0.10000000149011612
-      Head Length: 0.20000000298023224
+      Head Diameter: 0.05000000074505806
+      Head Length: 0.10000000149011612
       Length: 0.30000001192092896
-      Line Style: Billboards
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: reference path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 98; 160; 234
+      Pose Style: Arrows
+      Queue Size: 10
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.019999999552965164
+      Shaft Length: 0.15000000596046448
+      Topic: /nmpc/viz/horizon_ref
+      Unreliable: false
+      Value: true
+    - Alpha: 0.699999988079071
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 220; 138; 221
+      Enabled: true
+      Head Diameter: 0.05000000074505806
+      Head Length: 0.10000000149011612
+      Length: 0.30000001192092896
+      Line Style: Lines
       Line Width: 0.029999999329447746
       Name: predicted path
       Offset:
@@ -244,20 +175,36 @@ Visualization Manager:
       Pose Style: Arrows
       Queue Size: 10
       Radius: 0.029999999329447746
-      Shaft Diameter: 0.05000000074505806
+      Shaft Diameter: 0.019999999552965164
       Shaft Length: 0.15000000596046448
-      Topic: /nmpc/traj_horizon
+      Topic: /nmpc/viz/horizon_traj
       Unreliable: false
       Value: true
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: true
+      Name: odom_traj
+      Value: true
+      color: 255; 163; 72
+      duration: 900
+      frame: rmf_owl
+      line_width: 0.009999999776482582
+    - Class: jsk_rviz_plugin/TFTrajectory
+      Enabled: true
+      Name: drift_odom_traj
+      Value: true
+      color: 224; 27; 36
+      duration: 900
+      frame: rmf_owl_drifted
+      line_width: 0.009999999776482582
     - Alpha: 1
-      Angular Arrow Scale: 1
+      Angular Arrow Scale: 2
       Angular Color: 255; 255; 0
       Arrow Width: 1
       Class: rviz/TwistStamped
       Enabled: false
-      Hide Small Values: false
+      Hide Small Values: true
       History Length: 1
-      Linear Arrow Scale: 1
+      Linear Arrow Scale: 2
       Linear Color: 0; 255; 0
       Name: cmd
       Queue Size: 10
@@ -266,29 +213,9 @@ Visualization Manager:
       Value: false
     - Class: rviz/Group
       Displays:
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /nmpc/wp_dir
-          Name: goal direction
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /nmpc/wp_pos
-          Name: goal
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: true
-      Enabled: true
-      Name: goal
-    - Class: rviz/Group
-      Displays:
         - Class: rviz/Image
           Enabled: false
-          Image Topic: /oak/rgb/image_raw
+          Image Topic: /rmf_owl/cam/rgb
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -300,11 +227,11 @@ Visualization Manager:
           Value: false
         - Class: rviz/Image
           Enabled: true
-          Image Topic: /rmf_owl/cam/depth
+          Image Topic: /rmf_owl/lidar/range
           Max Value: 5
           Median window: 5
           Min Value: 0
-          Name: input depth
+          Name: lidar image
           Normalize Range: false
           Queue Size: 2
           Transport Hint: raw
@@ -312,11 +239,11 @@ Visualization Manager:
           Value: true
         - Class: rviz/Image
           Enabled: false
-          Image Topic: /os_cloud_node/range_image
-          Max Value: 1250
+          Image Topic: /rmf_owl/cam/depth
+          Max Value: 5
           Median window: 5
           Min Value: 0
-          Name: input lidar
+          Name: depth_image
           Normalize Range: false
           Queue Size: 2
           Transport Hint: raw
@@ -324,7 +251,7 @@ Visualization Manager:
           Value: false
         - Class: rviz/Image
           Enabled: true
-          Image Topic: /nmpc/vae_reconst
+          Image Topic: /nmpc/viz/vae_reconst
           Max Value: 1
           Median window: 5
           Min Value: 0
@@ -335,77 +262,49 @@ Visualization Manager:
           Unreliable: false
           Value: true
         - Class: rviz/Image
-          Enabled: false
-          Image Topic: /nmpc/sdf_img
+          Enabled: true
+          Image Topic: /nmpc/viz/sdf_img
           Max Value: 1
           Median window: 5
           Min Value: 0
-          Name: reconstructed sdf
+          Name: SDF slice
           Normalize Range: false
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: false
+          Value: true
       Enabled: true
       Name: images
     - Class: rviz/Group
       Displays:
-        - Alpha: 1
+        - Alpha: 0.10000000149011612
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
-            Max Value: 2.256516695022583
-            Min Value: -4.25106954574585
+            Max Value: 10
+            Min Value: -10
             Value: true
           Axis: Z
           Channel Name: intensity
           Class: rviz/PointCloud2
-          Color: 53; 132; 228
-          Color Transformer: FlatColor
-          Decay Time: 0
-          Enabled: false
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Min Color: 0; 0; 0
-          Name: compslam_registered
-          Position Transformer: XYZ
-          Queue Size: 10
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 0.03999999910593033
-          Style: Squares
-          Topic: /foo
-          Unreliable: false
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: false
-        - Alpha: 0.20000000298023224
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 8
-            Min Value: -2
-            Value: false
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/PointCloud2
           Color: 255; 255; 255
-          Color Transformer: AxisColor
-          Decay Time: 1000
-          Enabled: false
+          Color Transformer: FlatColor
+          Decay Time: 60
+          Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Min Color: 0; 0; 0
-          Name: compslam aggregated
+          Name: lidar aggregated
           Position Transformer: XYZ
           Queue Size: 10
           Selectable: true
-          Size (Pixels): 3
+          Size (Pixels): 1
           Size (m): 0.009999999776482582
-          Style: Squares
-          Topic: /foo
+          Style: Points
+          Topic: /rmf_owl/lidar/points
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: false
+          Value: true
         - Alpha: 0.800000011920929
           Autocompute Intensity Bounds: false
           Autocompute Value Bounds:
@@ -418,112 +317,54 @@ Visualization Manager:
           Color: 53; 132; 228
           Color Transformer: FlatColor
           Decay Time: 0
-          Enabled: true
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 2.9859843254089355
           Min Color: 0; 0; 0
           Min Intensity: -0.09704351425170898
-          Name: depth cam
+          Name: lidar
           Position Transformer: XYZ
           Queue Size: 10
           Selectable: true
           Size (Pixels): 2
-          Size (m): 0.03999999910593033
+          Size (m): 0.019999999552965164
           Style: Squares
-          Topic: /oak/stereo/pointcloud
+          Topic: /rmf_owl/lidar/points
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
-        - Alpha: 0.20000000298023224
-          Autocompute Intensity Bounds: true
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: intensity
-          Class: rviz/PointCloud2
-          Color: 255; 255; 255
-          Color Transformer: FlatColor
-          Decay Time: 1000
-          Enabled: true
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Min Color: 0; 0; 0
-          Name: depth cam aggregated
-          Position Transformer: XYZ
-          Queue Size: 10
-          Selectable: true
-          Size (Pixels): 3
-          Size (m): 0.009999999776482582
-          Style: Squares
-          Topic: /oak/stereo/pointcloud
-          Unreliable: false
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: true
+          Value: false
         - Alpha: 0.800000011920929
           Autocompute Intensity Bounds: false
           Autocompute Value Bounds:
             Max Value: 5
             Min Value: 0
             Value: false
-          Axis: Z
+          Axis: X
           Channel Name: z
           Class: rviz/PointCloud2
           Color: 53; 132; 228
-          Color Transformer: ""
+          Color Transformer: FlatColor
           Decay Time: 0
-          Enabled: false
+          Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 2.9859843254089355
+          Max Intensity: 5
           Min Color: 0; 0; 0
-          Min Intensity: -0.09704351425170898
-          Name: depth x_colored
-          Position Transformer: ""
+          Min Intensity: 0
+          Name: depth
+          Position Transformer: XYZ
           Queue Size: 10
           Selectable: true
           Size (Pixels): 2
           Size (m): 0.019999999552965164
           Style: Squares
-          Topic: /d455/depth/pointcloud
+          Topic: /rmf_owl/cam/pc
           Unreliable: false
           Use Fixed Frame: false
           Use rainbow: true
-          Value: false
-        - Alpha: 0.800000011920929
-          Autocompute Intensity Bounds: false
-          Autocompute Value Bounds:
-            Max Value: 10
-            Min Value: -10
-            Value: true
-          Axis: Z
-          Channel Name: z
-          Class: rviz/PointCloud2
-          Color: 255; 120; 0
-          Color Transformer: FlatColor
-          Decay Time: 0.20000000298023224
-          Enabled: false
-          Invert Rainbow: false
-          Max Color: 255; 255; 255
-          Max Intensity: 2.9859843254089355
-          Min Color: 0; 0; 0
-          Min Intensity: -0.09704351425170898
-          Name: depth VAE
-          Position Transformer: XYZ
-          Queue Size: 10
-          Selectable: true
-          Size (Pixels): 2
-          Size (m): 0.009999999776482582
-          Style: Points
-          Topic: /nmpc/pc_vae
-          Unreliable: false
-          Use Fixed Frame: true
-          Use rainbow: true
-          Value: false
+          Value: true
         - Alpha: 1
           Autocompute Intensity Bounds: false
           Autocompute Value Bounds:
@@ -547,9 +388,9 @@ Visualization Manager:
           Queue Size: 10
           Selectable: true
           Size (Pixels): 3
-          Size (m): 0.029999999329447746
+          Size (m): 0.05000000074505806
           Style: Squares
-          Topic: /nmpc/sdf_lvlset
+          Topic: /nmpc/viz/sdf_lvlset
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -584,7 +425,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.532289028167725
+      Distance: 10
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -592,26 +433,28 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 0.5676115155220032
-        Y: 0.15667103230953217
-        Z: 0.1769544631242752
+        X: 0
+        Y: 0
+        Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.29539889097213745
-      Target Frame: body
-      Yaw: 1.7303977012634277
+      Pitch: 0.7853981852531433
+      Target Frame: rmf_owl
+      Yaw: 0.7853981852531433
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
   Height: 1415
   Hide Left Dock: false
-  Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd0000000400000000000001a6000004eefc0200000011fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000001d7000000c900fffffffb000000160069006e007000750074002000640065007000740068010000021a000001040000001600fffffffb000000240076006100650020007200650063006f006e0073007400720075006300740069006f006e0100000324000001440000001600fffffffb000000160069006e0070007500740020006c0069006400610072000000024c000000a30000001600fffffffb00000022007200650063006f006e0073007400720075006300740065006400200073006400660000000220000000e00000001600fffffffb000000100052004d00460020004e004d00500043010000046e000000bd000000bd00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb00000012006d006f006e006f00630075006c00610072000000047d000000d50000001600fffffffb0000000a00440065007000740068000000044f000000d70000000000000000fb0000000a0044006500700074006801000002c8000001290000000000000000fb0000001200440065007000740068002000560041004501000003f70000012f0000000000000000000000010000010f000004eefc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d000004ee000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009fe00000039fc0100000002fb0000000800540069006d00650100000000000009fe0000032200fffffffb0000000800540069006d0065010000000000000450000000000000000000000852000004ee00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd0000000400000000000001d9000004e9fc0200000014fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000018c000000c900fffffffb0000001600640065007000740068005f0069006d00610067006500000001af000000cc0000001600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb00000012006d006f006e006f00630075006c0061007200000001ce000000cf0000001600fffffffb0000001200530044004600200073006c00690063006501000001cf0000019e0000001600fffffffb00000016006c006900640061007200200069006d0061006700650100000373000000730000001600fffffffb000000240076006100650020007200650063006f006e0073007400720075006300740069006f006e01000003ec000000730000001600fffffffb0000000a00440065007000740068000000044f000000d70000000000000000fb0000000a0044006500700074006801000002c8000001290000000000000000fb0000001200440065007000740068002000560041004501000003f70000012f0000000000000000fb000000160069006e00700075007400200064006500700074006801000002e4000000d90000000000000000fb00000012006d006f006e006f00630075006c006100720000000246000000e10000000000000000fb000000240076006100650020007200650063006f006e0073007400720075006300740069006f006e00000002f0000001210000000000000000fb000000100052004d00460020004e004d005000430100000465000000c1000000bd00ffffff00000001000001f9000004e9fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000004e9000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009fe0000003efc0100000002fb0000000800540069006d00650100000000000009fe0000032200fffffffb0000000800540069006d0065010000000000000450000000000000000000000620000004e900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   RMF NMPC:
+    collapsed: false
+  SDF slice:
     collapsed: false
   Selection:
     collapsed: false
@@ -620,17 +463,15 @@ Window Geometry:
   Tool Properties:
     collapsed: false
   Views:
-    collapsed: true
+    collapsed: false
   Width: 2558
   X: 2560
   Y: 0
-  input depth:
+  depth_image:
     collapsed: false
-  input lidar:
+  lidar image:
     collapsed: false
   monocular:
-    collapsed: false
-  reconstructed sdf:
     collapsed: false
   vae reconstruction:
     collapsed: false

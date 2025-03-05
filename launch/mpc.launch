@@ -2,14 +2,15 @@
 <launch>
     <!-- args -->
     <arg name="cfg" default="gz"/>
-
+    <param name="/cfg" value="$(arg cfg)"/>
+    
     <arg name="rebuild" default="false"/>
+    <param name="/rebuild" value="$(arg rebuild)"/>
     <arg name="vae" default="true"/>
+    <arg name="viz_vae" default="false"/>
     <arg name="viz_2d" default="false"/>
     <arg name="viz_3d" default="false"/>
 
-    <param name="/cfg" value="$(arg cfg)"/>
-    <param name="/rebuild" value="$(arg rebuild)"/>
 
     <!-- SDF NMPC -->
     <node pkg="sdf_nmpc_ros" type="sdfnmpc_node.py" name="sdfnmpc_node" output="screen"/>
@@ -21,7 +22,7 @@
     <node if="$(arg vae)" pkg="sdf_nmpc_ros" type="vae_node.py" name="vae_node" output="screen"/>
 
     <!-- visualization -->
-    <node pkg="sdf_nmpc_ros" type="viz_vae_node.py" name="viz_vae_node" output="screen"/>
+    <node if="$(arg viz_vae)" pkg="sdf_nmpc_ros" type="viz_vae_node.py" name="viz_vae_node" output="screen"/>
     <include if="$(arg viz_2d)" file="$(find sdf_nmpc_ros)/launch/viz_2d.launch" >
         <arg name="cfg" value="$(arg cfg)"/>
     </include>

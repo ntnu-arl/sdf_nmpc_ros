@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- args -->
+    <arg name="cfg" default="gz"/>
+    <param name="/cfg" value="$(arg cfg)"/>
+
+    <arg name="viz_vae" default="true"/>
+    <arg name="viz_2d" default="true"/>
+    <arg name="viz_3d" default="false"/>
+
+    <!-- viz nodes -->
+    <node if="$(arg viz_vae)" pkg="sdf_nmpc_ros" type="viz_vae_node.py" name="viz_vae_node" output="screen"/>
+    <include if="$(arg viz_2d)" file="$(find sdf_nmpc_ros)/launch/viz_2d.launch" >
+        <arg name="cfg" value="$(arg cfg)"/>
+    </include>
+    <include if="$(arg viz_3d)" file="$(find sdf_nmpc_ros)/launch/viz_3d.launch" >
+        <arg name="cfg" value="$(arg cfg)"/>
+    </include>
+
+    <!-- joystick -->
+    <include file="$(find joystick_remapper)/launch/joystick_remapper.launch"/>
+
+    <!-- rviz -->
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find sdf_nmpc_ros)/rviz/nmpc_lmf.rviz" />
+</launch>
