@@ -41,7 +41,7 @@ class RosWrapper:
                 self.pub_cmd = rospy.Publisher(topics['cmd_TRPYr'], Quaternion, tcp_nodelay=True, queue_size=1)
         else:
             if self.cfg.control_interface == 'Vacc':
-                self.pub_cmd = rospy.Publisher(topics['cmd'], PositionTarget, tcp_nodelay=True, queue_size=1)
+                self.pub_cmd = rospy.Publisher(topics['cmd_Vacc'], PositionTarget, tcp_nodelay=True, queue_size=1)
             else:
                 raise AssertionError('TRPYr control not interfaced with PX4')
 
