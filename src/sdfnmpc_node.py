@@ -4,7 +4,7 @@ from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR
 from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.controller import NMPC
 from collision_predictor_mpc.utils.reference import Ref
-from collision_predictor_mpc.utils.math import quat2rot
+from collision_predictor_mpc.utils.math import quat2rot, euler2rot, quat2yaw
 from collision_predictor_mpc.gen_model import build
 import rospy
 import collections
@@ -34,9 +34,15 @@ class RosWrapper:
 
         topics = self.cfg.ros.topics
         if self.cfg.flags['simulation']:
-            self.pub_cmd = rospy.Publisher(topics['cmd'], Twist, tcp_nodelay=True, queue_size=1)
-        if not self.cfg.flags['simulation']:
-            self.pub_cmd = rospy.Publisher(topics['cmd'], PositionTarget, tcp_nodelay=True, queue_size=1)
+            if self.cfg.control_interface == 'Vacc':
+                self.pub_cmd = rospy.Publisher(topics['cmd_Vacc'], Twist, tcp_nodelay=True, queue_size=1)
+            else:
+                self.pub_cmd = rospy.Publisher(topics['cmd_TRPYr'], Quaternion, tcp_nodelay=True, queue_size=1)
+        else:
+            if self.cfg.control_interface == 'Vacc':
+                self.pub_cmd = rospy.Publisher(topics['cmd'], PositionTarget, tcp_nodelay=True, queue_size=1)
+            else:
+                raise AssertionError('TRPYr control not interfaced with PX4')
 
         self.pub_cpt = rospy.Publisher(topics.output['cpt'], Float32, tcp_nodelay=True, queue_size=1)
         self.pub_speed = rospy.Publisher(topics.output['speed'], Float32, tcp_nodelay=True, queue_size=1)
@@ -46,7 +52,7 @@ class RosWrapper:
         self.pub_cmd_traj = rospy.Publisher(topics.viz['traj_horizon'], Path, tcp_nodelay=True, queue_size=1)
 
         self.sub_latent = rospy.Subscriber(topics['latent'], Latent, self.cb_latent, tcp_nodelay=True, queue_size=1)
-        self.sub_state = rospy.Subscriber(topics['odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
+        self.sub_state = rospy.Subscriber(topics['odom_drifted' if self.cfg.flags['drifted'] else 'odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
         self.sub_ref = rospy.Subscriber(topics['ref_horizon'], MultiDOFJointTrajectory, self.cb_ref, tcp_nodelay=True, queue_size=1)
 
         rospy.Service(self.cfg.ros.srv['flag'], Trigger, self.srv_sdf)
@@ -71,7 +77,7 @@ class RosWrapper:
 
         fail_count = self.nmpc.solve()
         if self.cfg.mpc.max_solver_fail and fail_count == self.cfg.mpc.max_solver_fail:
-            print('NMPC FAILED. SENDING HOVER COMMAND.')
+            rospy.logwarn('NMPC FAILED. SENDING HOVER COMMAND.')
             self.send_commands(self.nmpc.cmd_hover)
             self.start = False
             self.goto = False
@@ -101,15 +107,15 @@ class RosWrapper:
         self.pub_cmd_traj.publish(msg)
 
         ## command
-        commands = self.nmpc.get_cmd()
+        cmd_Vacc = self.nmpc.get_cmd_Vacc()
+        cmd_TRPYr = self.nmpc.get_cmd_TRPYr()
         if self.cfg.flags['simulation']:
-            msg = Twist()
-            msg.linear.x = commands[0]
-            msg.linear.y = commands[1]
-            msg.linear.z = commands[2]
-            msg.angular.x = 0.
-            msg.angular.y = 0.
-            msg.angular.z = commands[3]
+            if self.cfg.control_interface == 'Vacc':
+                msg = Twist()
+                msg.linear = Vector3(*cmd_Vacc[:3])
+                msg.angular = Vector3(0, 0, cmd_Vacc[3])
+            else:
+                msg = Quaternion(*cmd_TRPYr[1:], cmd_TRPYr[0])
         else:
             msg = PositionTarget()
             msg.header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.body)
@@ -117,20 +123,18 @@ class RosWrapper:
             msg.type_mask = PositionTarget.IGNORE_PX + PositionTarget.IGNORE_PY + PositionTarget.IGNORE_PZ \
                             + PositionTarget.IGNORE_VX + PositionTarget.IGNORE_VY + PositionTarget.IGNORE_VZ \
                             + PositionTarget.IGNORE_YAW
-            msg.acceleration_or_force.x = commands[0]
-            msg.acceleration_or_force.y = commands[1]
-            msg.acceleration_or_force.z = commands[2]
-            msg.yaw_rate = commands[3]
+            msg.acceleration_or_force = Vector3(*cmd_Vacc[:3])
+            msg.yaw_rate = cmd_Vacc[3]
         self.pub_cmd.publish(msg)
 
         msg_viz = TwistStamped()
         msg_viz.header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.body)
-        msg_viz.twist.linear.x = commands[0]
-        msg_viz.twist.linear.y = commands[1]
-        msg_viz.twist.linear.z = commands[2]
+        msg_viz.twist.linear.x = cmd_Vacc[0]
+        msg_viz.twist.linear.y = cmd_Vacc[1]
+        msg_viz.twist.linear.z = cmd_Vacc[2]
         msg_viz.twist.angular.x = 0
         msg_viz.twist.angular.y = 0
-        msg_viz.twist.angular.z = commands[3]
+        msg_viz.twist.angular.z = cmd_Vacc[3]
         self.pub_cmd_viz.publish(msg_viz)
 
     def cb_ref(self, msg):

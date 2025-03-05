@@ -10,7 +10,7 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import PoseStamped, Transform, Twist, Quaternion, Vector3
 from nav_msgs.msg import Path, Odometry
 from trajectory_msgs.msg import MultiDOFJointTrajectory, MultiDOFJointTrajectoryPoint
-from std_srvs.srv import SetBool, SetBoolResponse
+from std_srvs.srv import SetBool, SetBoolResponse, Trigger, TriggerResponse
 
 
 class RosWrapper:
@@ -26,11 +26,12 @@ class RosWrapper:
         self.pub_traj = rospy.Publisher(self.cfg.ros.topics['ref_horizon'], MultiDOFJointTrajectory, tcp_nodelay=True, queue_size=1)
         self.pub_traj_viz = rospy.Publisher(self.cfg.ros.topics.viz['ref_horizon'], Path, tcp_nodelay=True, queue_size=1)
 
-        self.sub_state = rospy.Subscriber(self.cfg.ros.topics['odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
+        self.sub_state = rospy.Subscriber(self.cfg.ros.topics['odom_drifted' if self.cfg.flags['drifted'] else 'odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
         self.sub_wps = rospy.Subscriber(self.cfg.ros.topics['ref_wps'], Path, self.cb_wps, tcp_nodelay=True, queue_size=1)
         self.sub_joystick = rospy.Subscriber(self.cfg.ros.topics['joystick'], Twist, self.cb_joystick, tcp_nodelay=True, queue_size=1)
 
         rospy.Service(self.cfg.ros.srv['start'], SetBool, self.srv_startstop)
+        rospy.Service(self.cfg.ros.srv['goto'], Trigger, self.srv_goto)
 
         rospy.loginfo('node ref_gen started successfully')
         rospy.spin()
@@ -43,10 +44,10 @@ class RosWrapper:
 
             ## plan for horizon
             self.ref_gen.x0 = self.x0
-            if self.cfg.ref.ref_mode == 'topic':
-                ref_traj = self.ref_gen.gen_ref_list_wps(self.wps[:1] if self.cfg.ref.stop_and_go else self.wps)
-            else:
+            if self.cfg.ref.ref_mode == 'joystick':
                 ref_traj = self.ref_gen.gen_ref_joystick(self.cmd_joy)
+            else:
+                ref_traj = self.ref_gen.gen_ref_list_wps(self.wps[:1] if self.cfg.ref.stop_and_go else self.wps)
 
             ## publish traj
             msg = MultiDOFJointTrajectory()
@@ -111,6 +112,10 @@ class RosWrapper:
             rospy.loginfo(f'stop')
         return SetBoolResponse(success=True, message='')
 
+    def srv_goto(self, msg):
+        if self.cfg.ref.ref_mode == 'cfg' and self.wps:  # check if start service was called
+            self.wps = list(map(Waypoint, self.cfg.ref.wps))
+        return TriggerResponse(success=True, message='')
 
 if __name__ == '__main__':
     np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)
