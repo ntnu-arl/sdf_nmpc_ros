@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <!-- args -->
-    <arg name="cfg" default="gz"/>
+    <arg name="cfg" default="kookaburra"/>
     <param name="/cfg" value="$(arg cfg)"/>
 
     <arg name="viz_vae" default="true"/>
