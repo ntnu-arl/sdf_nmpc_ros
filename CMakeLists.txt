@@ -168,6 +168,7 @@ catkin_install_python(PROGRAMS
     src/sdfnmpc_node.py
     src/ref_gen_node.py
     src/vae_node.py
+    src/viz_markers_node.py
     src/viz_sdf_2D_node.py
     src/viz_sdf_3D_node.py
     src/viz_vae_node.py

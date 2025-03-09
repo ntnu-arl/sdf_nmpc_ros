@@ -17,9 +17,9 @@ class RosWrapper:
         self.vae = VaeWrapper(cfg)
 
         topics = self.cfg.ros.topics
-        self.sub_img = rospy.Subscriber(topics['obs'], Image, self.cb_img, tcp_nodelay=True, queue_size=1)
         self.pub_latent = rospy.Publisher(topics['latent'], Latent, tcp_nodelay=True, queue_size=1)
         self.pub_sdf = rospy.Publisher(topics.output['sdf_true'], Float32, tcp_nodelay=True, queue_size=1)
+        self.sub_img = rospy.Subscriber(topics['obs'], Image, self.cb_img, tcp_nodelay=True, queue_size=1)
 
         rospy.loginfo('node vae started successfully')
         rospy.spin()

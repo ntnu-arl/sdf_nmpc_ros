@@ -82,10 +82,10 @@ class RosWrapper:
         # self.cbar_ax.set_label(r'Neural SDF [m]')
 
         ## topics
+        self.pub_img = rospy.Publisher(self.cfg.ros.topics.viz['img_df'], Image, queue_size=1)
         self.sub_latent = rospy.Subscriber(self.cfg.ros.topics['latent'], Latent, self.cb_latent, tcp_nodelay=True, queue_size=1)
         self.sub_ref = rospy.Subscriber(self.cfg.ros.topics.viz['ref_horizon'], Path, self.cb_path_ref, tcp_nodelay=True, queue_size=1)
         self.sub_traj = rospy.Subscriber(self.cfg.ros.topics.viz['traj_horizon'], Path, self.cb_path_traj, tcp_nodelay=True, queue_size=1)
-        self.pub_img = rospy.Publisher(self.cfg.ros.topics.viz['img_df'], Image, queue_size=1)
 
         rospy.loginfo('node viz_sdf_2d started successfully')
         rospy.spin()

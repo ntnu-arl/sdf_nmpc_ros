@@ -22,11 +22,12 @@ class RosWrapper:
         self.x0 = None
         self.wps = []
         self.cmd_joy = []
+        self.printed = True
 
         self.pub_traj = rospy.Publisher(self.cfg.ros.topics['ref_horizon'], MultiDOFJointTrajectory, tcp_nodelay=True, queue_size=1)
         self.pub_traj_viz = rospy.Publisher(self.cfg.ros.topics.viz['ref_horizon'], Path, tcp_nodelay=True, queue_size=1)
 
-        self.sub_state = rospy.Subscriber(self.cfg.ros.topics['odom_drifted' if self.cfg.flags['drifted'] else 'odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
+        self.sub_state = rospy.Subscriber(self.cfg.ros.topics['odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
         self.sub_wps = rospy.Subscriber(self.cfg.ros.topics['ref_wps'], Path, self.cb_wps, tcp_nodelay=True, queue_size=1)
         self.sub_joystick = rospy.Subscriber(self.cfg.ros.topics['joystick'], Twist, self.cb_joystick, tcp_nodelay=True, queue_size=1)
 
@@ -39,8 +40,12 @@ class RosWrapper:
     def replan(self):
         if self.wps or self.cmd_joy:
             ## depopulate wp if close enough
-            if len(self.wps) > 1 and np.linalg.norm(self.x0[:3] - self.wps[0].p) < self.cfg.ref.wp_tol:
-                self.wps.pop(0)
+            if np.linalg.norm(self.x0[:3] - self.wps[0].p) < self.cfg.ref.wp_tol:
+                if len(self.wps) > 1:
+                    self.wps.pop(0)
+                elif not self.printed:
+                    self.printed = True
+                    rospy.loginfo('last waypoint reached, hovering')
 
             ## plan for horizon
             self.ref_gen.x0 = self.x0
@@ -73,6 +78,7 @@ class RosWrapper:
 
     def cb_wps(self, msg):
         if self.cfg.ref.ref_mode == 'topic' and self.wps:  # check if start service was called
+            self.printed = False
             self.wps = []
             for pose in msg.poses:
                 self.wps.append(Waypoint(
@@ -114,6 +120,7 @@ class RosWrapper:
 
     def srv_goto(self, msg):
         if self.cfg.ref.ref_mode == 'cfg' and self.wps:  # check if start service was called
+            self.printed = False
             self.wps = list(map(Waypoint, self.cfg.ref.wps))
         return TriggerResponse(success=True, message='')
 

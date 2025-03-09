@@ -20,11 +20,12 @@ from std_srvs.srv import Trigger, TriggerResponse, SetBool, SetBoolResponse
 class RosWrapper:
     def __init__(self, cfg):
         rospy.init_node('sdf_nmpc')
+        rospy.loginfo('starting sdf_nmpc node...')
 
         ## flags, message queues and class members
         self.cfg = cfg
         self.nmpc = NMPC(cfg)
-        self.rate = rospy.Rate(1/self.cfg.mpc.control_loop_time*1e3)
+        self.rate_ctrl = rospy.Rate(1/self.cfg.mpc.control_loop_time*1e3)
 
         self.state_queue = collections.deque(maxlen=10)
 
@@ -66,7 +67,7 @@ class RosWrapper:
                 self.control_iteration()
                 self.publish_stuff()
             try:
-                self.rate.sleep()
+                self.rate_ctrl.sleep()
             except rospy.exceptions.ROSTimeMovedBackwardsException as e:
                 # rospy.logwarn(e)
                 pass
@@ -94,16 +95,17 @@ class RosWrapper:
         self.pub_sdf.publish(Float32(self.nmpc.eval(0)[0]))
 
         ## predicted traj
-        msg = Path()
-        msg.header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.world)
-        traj = self.nmpc.get_openloop_traj()
-        for p, q in traj:
-            pose = PoseStamped()
-            pose.header = msg.header
-            pose.pose.position = Vector3(*p)
-            pose.pose.orientation = Quaternion(*q[1:], q[0])
-            msg.poses.append(pose)
-        self.pub_cmd_traj.publish(msg)
+        if not self.failed:
+            msg = Path()
+            msg.header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.world)
+            traj = self.nmpc.get_openloop_traj()
+            for p, q in traj:
+                pose = PoseStamped()
+                pose.header = msg.header
+                pose.pose.position = Vector3(*p)
+                pose.pose.orientation = Quaternion(*q[1:], q[0])
+                msg.poses.append(pose)
+            self.pub_cmd_traj.publish(msg)
 
         ## command
         cmd_Vacc = self.nmpc.get_cmd_Vacc() if not self.failed else self.nmpc.cmd_Vacc_hover
