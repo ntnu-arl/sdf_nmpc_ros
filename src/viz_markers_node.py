@@ -4,7 +4,6 @@ from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR
 from collision_predictor_mpc.utils.config import Config
 import rospy
 from std_msgs.msg import Header
-from geometry_msgs.msg import Quaternion, Vector3
 from nav_msgs.msg import Odometry, Path
 from visualization_msgs.msg import Marker
 

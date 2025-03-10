@@ -2,7 +2,6 @@ import os
 import numpy as np
 import torch
 from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR, COLPREDMPC_TMP_DIR
-from collision_predictor_mpc.controller import NMPC
 from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.utils.pos_sampler import PosSampler
 from collision_predictor_mpc.utils.visualization import Imgs2Points

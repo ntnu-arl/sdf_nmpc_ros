@@ -4,7 +4,7 @@ from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR
 from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.vae import VaeWrapper
 import rospy
-from std_msgs.msg import Header, Float32MultiArray, Float32
+from std_msgs.msg import Float32MultiArray, Float32
 from sensor_msgs.msg import Image
 from sdf_nmpc_ros.msg import Latent
 

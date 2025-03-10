@@ -3,14 +3,12 @@ import os
 import numpy as np
 import torch
 from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR, COLPREDMPC_TMP_DIR
-from collision_predictor_mpc.controller import NMPC
 from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.utils.pos_sampler import PosSampler
 from collision_predictor_mpc.utils.math import quat2rot
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import rospy
-from std_msgs.msg import Header
 from sdf_nmpc_ros.msg import Latent
 from sensor_msgs.msg import Image
 from nav_msgs.msg import Path
