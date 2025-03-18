@@ -3,6 +3,7 @@
     <arg name="cfg" default="gz"/>
     <arg name="tol" default="2.5e-2"/>
     <arg name="nb_points" default="50000"/>
+    <arg name="cores" default="0"/>
 
     <param name="/cfg" value="$(arg cfg)"/>
     <param name="/tol" value="$(arg tol)"/>

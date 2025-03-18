@@ -165,6 +165,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
     src/build_solver.py
+    src/range_to_pc.py
     src/sdfnmpc_node.py
     src/ref_gen_node.py
     src/vae_node.py

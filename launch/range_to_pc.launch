@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="cfg" default="gz"/>
+
+    <param name="/cfg" value="$(arg cfg)"/>
+
+    <node pkg="sdf_nmpc_ros" type="range_to_pc.py" name="range_to_pc" output="screen"/>
+</launch>
