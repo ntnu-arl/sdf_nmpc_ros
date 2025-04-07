@@ -26,14 +26,14 @@ class RosWrapper:
         self.cfg = cfg
         self.nmpc = NMPC(cfg)
         self.rate_ctrl = rospy.Rate(1/self.cfg.mpc.control_loop_time*1e3)
-
         self.state_queue = collections.deque(maxlen=10)
 
-        self.failed = True
-        self.sdf_flag = False
         self.x0 = None
         self.ref = None
+        self.failed = True
+        self.reset()
 
+        ## topics and services
         topics = self.cfg.ros.topics
         if self.cfg.flags['simulation']:
             if self.cfg.control_interface == 'Vacc':
@@ -59,18 +59,46 @@ class RosWrapper:
 
         rospy.Service(self.cfg.ros.srv['flag'], Trigger, self.srv_sdf)
 
+        ## start state machine
         rospy.loginfo('node sdf_nmpc started successfully')
+        self.running = False
+        self.sm_manager()
 
-    def spin(self):
+    def reset(self):
+        self.sdf_flag = False
+        self.nmpc.reset()
+
+    def sm_manager(self):
         while not rospy.is_shutdown():
-            if self.x0 is not None and self.ref is not None:
-                self.control_iteration()
-                self.publish_stuff()
+            ## sleep
             try:
                 self.rate_ctrl.sleep()
             except rospy.exceptions.ROSTimeMovedBackwardsException as e:
-                # rospy.logwarn(e)
                 pass
+
+            ## state machine
+            if not self.running:
+                if self.x0 is not None and self.ref is not None:
+                    self.running = True
+                    rospy.loginfo('first reference received, starting mpc')
+
+            if self.running:
+                now = rospy.Time.now().to_sec()
+                if now > self.t_ref + self.cfg.mpc.timeout_ref:
+                    self.reset()
+                    self.ref = Ref(self.cfg)
+                    self.ref.hover_at_state(self.x0)
+                    rospy.logerr('reference timeout, changing reference to hover')
+                elif self.sdf_flag and now > self.t_img + self.cfg.mpc.timeout_img:
+                    self.sdf_flag = False
+                    self.nmpc.reset_latent()
+                    rospy.logerr('observation timeout, disabling constraints')
+                self.control_iteration()
+                if self.failed:
+                    self.reset()
+                    rospy.logerr('NMPC FAILED, disabling constraints')
+                self.publish_viz()
+            self.publish_cmd()
 
     def control_iteration(self):
         ## init and solve
@@ -78,15 +106,34 @@ class RosWrapper:
         self.nmpc.set_x0(self.x0)
 
         fail_count = self.nmpc.solve()
-        if self.cfg.mpc.max_solver_fail and fail_count == self.cfg.mpc.max_solver_fail:
-            rospy.logwarn('NMPC FAILED. SENDING HOVER COMMAND.')
+        if fail_count == self.cfg.mpc.max_solver_fail:
             self.failed = True
-            self.sdf_flag = False
-            self.nmpc.reset()
         else:
             self.failed = False
 
-    def publish_stuff(self):
+    def publish_cmd(self):
+        if self.cfg.flags['simulation']:
+            if self.cfg.control_interface == 'Vacc':
+                cmd_Vacc = self.nmpc.get_cmd_Vacc() if not self.failed else self.nmpc.cmd_Vacc_hover
+                msg = Twist()
+                msg.linear = Vector3(*cmd_Vacc[:3])
+                msg.angular = Vector3(0, 0, cmd_Vacc[3])
+            else:
+                cmd_TRPYr = self.nmpc.get_cmd_TRPYr() if not self.failed else self.nmpc.cmd_TRPYr_hover
+                msg = Quaternion(*cmd_TRPYr[1:], cmd_TRPYr[0])
+        else:
+            cmd_Vacc = self.nmpc.get_cmd_Vacc() if not self.failed else self.nmpc.cmd_Vacc_hover
+            msg = PositionTarget()
+            msg.header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.body)
+            msg.coordinate_frame = PositionTarget.FRAME_BODY_NED
+            msg.type_mask = PositionTarget.IGNORE_PX + PositionTarget.IGNORE_PY + PositionTarget.IGNORE_PZ \
+                            + PositionTarget.IGNORE_VX + PositionTarget.IGNORE_VY + PositionTarget.IGNORE_VZ \
+                            + PositionTarget.IGNORE_YAW
+            msg.acceleration_or_force = Vector3(*cmd_Vacc[:3])
+            msg.yaw_rate = cmd_Vacc[3]
+        self.pub_cmd.publish(msg)
+
+    def publish_viz(self):
         ## speed
         self.pub_speed.publish(Float32(np.linalg.norm(self.x0[7:10])))
         ## nmpc solving time
@@ -94,8 +141,8 @@ class RosWrapper:
         ## neural sdf value
         self.pub_sdf.publish(Float32(self.nmpc.eval(0)[0]))
 
-        ## predicted traj
         if not self.failed:
+            ## predicted traj
             msg = Path()
             msg.header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.world)
             traj = self.nmpc.get_openloop_traj()
@@ -109,25 +156,6 @@ class RosWrapper:
 
         ## command
         cmd_Vacc = self.nmpc.get_cmd_Vacc() if not self.failed else self.nmpc.cmd_Vacc_hover
-        cmd_TRPYr = self.nmpc.get_cmd_TRPYr() if not self.failed else self.nmpc.cmd_TRPYr_hover
-        if self.cfg.flags['simulation']:
-            if self.cfg.control_interface == 'Vacc':
-                msg = Twist()
-                msg.linear = Vector3(*cmd_Vacc[:3])
-                msg.angular = Vector3(0, 0, cmd_Vacc[3])
-            else:
-                msg = Quaternion(*cmd_TRPYr[1:], cmd_TRPYr[0])
-        else:
-            msg = PositionTarget()
-            msg.header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.body)
-            msg.coordinate_frame = PositionTarget.FRAME_BODY_NED
-            msg.type_mask = PositionTarget.IGNORE_PX + PositionTarget.IGNORE_PY + PositionTarget.IGNORE_PZ \
-                            + PositionTarget.IGNORE_VX + PositionTarget.IGNORE_VY + PositionTarget.IGNORE_VZ \
-                            + PositionTarget.IGNORE_YAW
-            msg.acceleration_or_force = Vector3(*cmd_Vacc[:3])
-            msg.yaw_rate = cmd_Vacc[3]
-        self.pub_cmd.publish(msg)
-
         msg_viz = TwistStamped()
         msg_viz.header = Header(stamp=rospy.Time.now(), frame_id=self.cfg.ros.frames.body)
         msg_viz.twist.linear.x = cmd_Vacc[0]
@@ -140,8 +168,8 @@ class RosWrapper:
 
     def cb_ref(self, msg):
         if self.ref is None:
-            rospy.loginfo('first reference received, starting mpc')
-            self.ref = Ref(cfg)
+            self.ref = Ref(self.cfg)
+        self.t_ref = rospy.Time.now().to_sec()
         for k, pose in enumerate(msg.points):
             self.ref.p[0] = pose.transforms[0].translation.x
             self.ref.p[1] = pose.transforms[0].translation.y
@@ -158,9 +186,9 @@ class RosWrapper:
 
     def cb_latent(self, msg):
         if self.x0 is not None:
-            t_img = msg.header.stamp.to_sec()
+            self.t_img = msg.header.stamp.to_sec()
             ts, xs = zip(*self.state_queue)  # tranpose
-            x = xs[np.argmin(np.abs(np.array(ts) - t_img))]
+            x = xs[np.argmin(np.abs(np.array(ts) - self.t_img))]
             self.nmpc.set_latent(msg.latent.data, x[:3], quat2rot(x[3:7]))
 
     def cb_state(self, msg):
@@ -182,6 +210,7 @@ class RosWrapper:
             self.sdf_flag = not self.sdf_flag
             return TriggerResponse(success=True, message='')
         else:
+            rospy.logerr('no image received, cannot activate constraints')
             return TriggerResponse(success=False, message='')
 
 
@@ -198,7 +227,5 @@ if __name__ == '__main__':
 
     cfg = Config(os.path.join(COLPREDMPC_CONFIG_DIR, cfg_file))
     ros_wrapper = RosWrapper(cfg)
-
-    ros_wrapper.spin()
     print('ROSPY DEAD. EXITING.')
     exit(0)
