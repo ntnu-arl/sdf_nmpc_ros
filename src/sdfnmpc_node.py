@@ -30,8 +30,9 @@ class RosWrapper:
 
         self.x0 = None
         self.ref = None
-        self.failed = True
         self.reset()
+        self.t_img = 0
+        self.t_ref = 0
 
         ## topics and services
         topics = self.cfg.ros.topics
@@ -57,7 +58,8 @@ class RosWrapper:
         self.sub_state = rospy.Subscriber(topics['odom_drifted' if self.cfg.flags['drifted'] else 'odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
         self.sub_ref = rospy.Subscriber(topics['ref_horizon'], MultiDOFJointTrajectory, self.cb_ref, tcp_nodelay=True, queue_size=1)
 
-        rospy.Service(self.cfg.ros.srv['flag'], Trigger, self.srv_sdf)
+        rospy.Service(self.cfg.ros.srv['get_flag'], Trigger, self.srv_get_flag)
+        rospy.Service(self.cfg.ros.srv['set_flag'], SetBool, self.srv_set_flag)
 
         ## start state machine
         rospy.loginfo('node sdf_nmpc started successfully')
@@ -66,6 +68,7 @@ class RosWrapper:
 
     def reset(self):
         self.sdf_flag = False
+        self.failed = True
         self.nmpc.reset()
 
     def sm_manager(self):
@@ -81,24 +84,24 @@ class RosWrapper:
                 if self.x0 is not None and self.ref is not None:
                     self.running = True
                     rospy.loginfo('first reference received, starting mpc')
-
-            if self.running:
+            else:
                 now = rospy.Time.now().to_sec()
                 if now > self.t_ref + self.cfg.mpc.timeout_ref:
                     self.reset()
-                    self.ref = Ref(self.cfg)
-                    self.ref.hover_at_state(self.x0)
-                    rospy.logerr('reference timeout, changing reference to hover')
+                    self.x0 = None
+                    self.ref = None
+                    self.running = False
+                    rospy.logwarn('reference timeout, resuming to idle mode')
                 elif self.sdf_flag and now > self.t_img + self.cfg.mpc.timeout_img:
                     self.sdf_flag = False
                     self.nmpc.reset_latent()
-                    rospy.logerr('observation timeout, disabling constraints')
+                    rospy.logwarn('observation timeout, disabling constraints')
                 self.control_iteration()
                 if self.failed:
                     self.reset()
                     rospy.logerr('NMPC FAILED, disabling constraints')
                 self.publish_viz()
-            self.publish_cmd()
+                self.publish_cmd()
 
     def control_iteration(self):
         ## init and solve
@@ -166,6 +169,7 @@ class RosWrapper:
         msg_viz.twist.angular.z = cmd_Vacc[3]
         self.pub_cmd_viz.publish(msg_viz)
 
+    ## callbacks and services
     def cb_ref(self, msg):
         if self.ref is None:
             self.ref = Ref(self.cfg)
@@ -205,15 +209,18 @@ class RosWrapper:
         self.x0 = np.concatenate([W_p_B, W_q_B, W_v_B, B_w_B])
         self.state_queue.appendleft((msg.header.stamp.to_sec(), self.x0.copy()))
 
-    def srv_sdf(self, msg):
-        if (self.nmpc.p[0,self.cfg.mpc.p_idx.W_p_Co]).any():
-            self.sdf_flag = not self.sdf_flag
-            return TriggerResponse(success=True, message='')
-        else:
+    def srv_get_flag(self, srv):
+        return TriggerResponse(success=self.sdf_flag, message='')
+
+    def srv_set_flag(self, srv):
+        if srv.data and not (self.nmpc.p[0,self.cfg.mpc.p_idx.W_p_Co]).any():
             rospy.logerr('no image received, cannot activate constraints')
-            return TriggerResponse(success=False, message='')
+        else:
+            self.sdf_flag = srv.data
+        return SetBoolResponse(success=self.sdf_flag, message='')
 
 
+## main
 if __name__ == '__main__':
     np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)
     cfg_file = f'params_{rospy.get_param("/cfg")}.yaml'
