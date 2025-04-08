@@ -61,7 +61,7 @@ class RosWrapper:
         msg_marker = Marker()
         msg_marker.header = Header(stamp=msg.header.stamp, frame_id=self.cfg.ros.frames.world)
         msg_marker.type = Marker.SPHERE
-        msg_marker.pose.position = msg.poses[0].position
+        msg_marker.pose.position = msg.poses[0].pose.position
         msg_marker.pose.orientation.w = 1
         msg_marker.scale.x = 0.2
         msg_marker.scale.y = 0.2
