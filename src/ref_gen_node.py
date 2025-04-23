@@ -4,6 +4,7 @@ from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR
 from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.utils.reference import Waypoint
 from collision_predictor_mpc.ref_gen import RefGen
+from collision_predictor_mpc.utils.math import yaw2quat
 import rospy
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseStamped, Transform, Twist, Quaternion, Vector3
@@ -152,8 +153,9 @@ class RosWrapper:
         for wp in self.cfg.ref.wps:
             pose = PoseStamped()
             pose.header = msg.header
-            pose.pose.position = Vector3(*wp)
-            pose.pose.orientation.w = 1
+            pose.pose.position = Vector3(*wp[:3])
+            q = yaw2quat(wp[3])
+            pose.pose.orientation = Quaternion(*q[1:], q[0])
             msg.poses.append(pose)
         self.pub_wps.publish(msg)
         return TriggerResponse(success=True, message='')
