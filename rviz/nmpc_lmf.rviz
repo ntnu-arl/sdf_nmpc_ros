@@ -8,7 +8,6 @@ Panels:
         - /odometry_rig1/Shape1
         - /odometry_compslam1/Shape1
         - /odometry_px41/Shape1
-        - /pointclouds1
         - /pointclouds1/lidar aggregated1/Autocompute Value Bounds1
       Splitter Ratio: 0.5159235596656799
     Tree Height: 399
@@ -29,7 +28,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: lidar aggregated
+    SyncSource: ""
   - Class: rviz_nmpc_plugin/RMF NMPC
     Name: RMF NMPC
 Preferences:
@@ -527,7 +526,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.3866732120513916
+      Distance: 6.406782627105713
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -543,9 +542,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.694796085357666
+      Pitch: 0.8147960305213928
       Target Frame: kookaburra
-      Yaw: 0.8140891194343567
+      Yaw: 2.4690914154052734
     Saved: ~
 Window Geometry:
   Displays:
