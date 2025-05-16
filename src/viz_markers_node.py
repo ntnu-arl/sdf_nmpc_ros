@@ -16,6 +16,8 @@ class RosWrapper:
 
         self.cfg = cfg
 
+        self.state = None
+
         topics = self.cfg.ros.topics
         self.pub_body = rospy.Publisher(topics.viz.markers['body'], Marker, tcp_nodelay=False, queue_size=1)
         self.pub_col = rospy.Publisher(topics.viz.markers['col'], Marker, tcp_nodelay=False, queue_size=1)
@@ -73,6 +75,9 @@ class RosWrapper:
         self.pub_wp.publish(msg_marker)
 
     def cb_horizon(self, msg):
+        if self.state is None:
+            return
+
         ## direction to goal
         msg_marker = Marker()
         msg_marker.header = Header(stamp=msg.header.stamp, frame_id=self.cfg.ros.frames.world)
