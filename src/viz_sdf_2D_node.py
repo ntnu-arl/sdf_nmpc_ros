@@ -16,7 +16,7 @@ from nav_msgs.msg import Path
 
 class RosWrapper:
     def __init__(self, cfg, ang=0, tol=2.5e-2, nb_points=10000):
-        rospy.init_node('viz_sdf')
+        rospy.init_node('viz_sdf_2d')
 
         self.cfg = cfg
         self.tol = tol

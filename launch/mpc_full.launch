@@ -25,10 +25,6 @@
     <!-- visualization -->
     <node if="$(arg viz_markers)" pkg="sdf_nmpc_ros" type="viz_markers_node.py" name="viz_markers_node" output="screen"/>
     <node if="$(arg viz_vae)" pkg="sdf_nmpc_ros" type="viz_vae_node.py" name="viz_vae_node" output="screen"/>
-    <include if="$(arg viz_2d)" file="$(find sdf_nmpc_ros)/launch/viz_2d.launch">
-        <arg name="cfg" value="$(arg cfg)"/>
-    </include>
-    <include if="$(arg viz_3d)" file="$(find sdf_nmpc_ros)/launch/viz_3d.launch">
-        <arg name="cfg" value="$(arg cfg)"/>
-    </include>
+    <include if="$(arg viz_2d)" file="$(find sdf_nmpc_ros)/launch/viz_2d.launch"/>
+    <include if="$(arg viz_3d)" file="$(find sdf_nmpc_ros)/launch/viz_3d.launch"/>
 </launch>

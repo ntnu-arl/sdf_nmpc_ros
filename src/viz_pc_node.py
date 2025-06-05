@@ -13,8 +13,8 @@ from sensor_msgs import point_cloud2
 
 
 class RosWrapper:
-    def __init__(self, pc2img):
-        rospy.init_node('range_to_pc')
+    def __init__(self, cfg, downsamp=4, outlier_rm=False):
+        rospy.init_node('viz_pc')
 
         self.cfg = cfg
 
@@ -22,7 +22,7 @@ class RosWrapper:
             preprocessing.ToDevice(self.cfg.nn.vae_device),
             torch.jit.script(preprocessing.Reshape(self.cfg.sensor.shape_imgs)),
             torch.jit.script(preprocessing.ClipDistance(self.cfg.sensor.dmax, self.cfg.sensor.mm_resolution)),
-            preprocessing.Morph(self.cfg.nn.vae_device),
+            preprocessing.RemoveCloseOutliers(self.cfg.nn.vae_device) if outlier_rm else torch.nn.Identity(),
         )
 
         self.img_to_points = Imgs2Points(
@@ -31,7 +31,7 @@ class RosWrapper:
             dmax=self.cfg.sensor.dmax,
             hfov=self.cfg.sensor.hfov,
             vfov=self.cfg.sensor.vfov,
-            downsamp=1,
+            downsamp=downsamp,
             remove_d0=True,
             remove_dmax=True,
             device=self.cfg.nn.vae_device,

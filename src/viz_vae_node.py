@@ -10,7 +10,7 @@ from sdf_nmpc_ros.msg import Latent
 
 class RosWrapper:
     def __init__(self, cfg):
-        rospy.init_node('vae')
+        rospy.init_node('viz_vae')
 
         self.cfg = cfg
         self.vae = VaeWrapper(cfg)

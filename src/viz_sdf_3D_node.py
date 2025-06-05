@@ -14,7 +14,7 @@ from sensor_msgs import point_cloud2
 
 class RosWrapper:
     def __init__(self, cfg, tol=2.5e-2, nb_points=10000):
-        rospy.init_node('viz_sdf')
+        rospy.init_node('viz_sdf_3d')
 
         self.cfg = cfg
         self.tol = tol

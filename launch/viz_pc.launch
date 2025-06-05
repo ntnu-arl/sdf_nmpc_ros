@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="sdf_nmpc_ros" type="viz_pc_node.py" name="viz_pc" output="screen"/>
+</launch>

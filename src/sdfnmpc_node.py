@@ -58,7 +58,7 @@ class RosWrapper:
         self.pub_cmd_traj = rospy.Publisher(topics.viz['traj_horizon'], Path, tcp_nodelay=True, queue_size=1)
 
         self.sub_latent = rospy.Subscriber(topics['latent'], Latent, self.cb_latent, tcp_nodelay=True, queue_size=1)
-        self.sub_state = rospy.Subscriber(topics['odom_drifted' if self.cfg.flags['drifted'] else 'odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
+        self.sub_state = rospy.Subscriber(topics['odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
         self.sub_ref = rospy.Subscriber(topics['ref_horizon'], MultiDOFJointTrajectory, self.cb_ref, tcp_nodelay=True, queue_size=1)
 
         rospy.Service(self.cfg.ros.srv['get_flag'], Trigger, self.srv_get_flag)
@@ -118,7 +118,7 @@ class RosWrapper:
             self.failed = False
 
     def publish_cmd(self):
-        # self.nmpc.set_x0(self.x0)
+        self.nmpc.set_x0(self.x0)
         if self.cfg.flags['simulation']:
             if self.cfg.control_interface == 'acc':
                 cmd_acc = self.nmpc.get_cmd_acc() if not self.failed else self.nmpc.cmd_acc_hover
