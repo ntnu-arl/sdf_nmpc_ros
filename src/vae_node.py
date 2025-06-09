@@ -21,7 +21,7 @@ class RosWrapper:
         self.pub_sdf = rospy.Publisher(topics.output['sdf_true'], Float32, tcp_nodelay=True, queue_size=1)
         self.sub_img = rospy.Subscriber(topics['obs'], Image, self.cb_img, tcp_nodelay=True, queue_size=1)
 
-        rospy.loginfo('node vae started successfully')
+        rospy.loginfo('[vae] node started successfully')
         rospy.spin()
 
     def cb_img(self, msg):

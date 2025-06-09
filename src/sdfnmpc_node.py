@@ -21,7 +21,7 @@ from std_srvs.srv import Trigger, TriggerResponse, SetBool, SetBoolResponse
 class RosWrapper:
     def __init__(self, cfg):
         rospy.init_node('sdf_nmpc')
-        rospy.loginfo('starting sdf_nmpc node...')
+        rospy.loginfo('[sdf_nmpc] starting node...')
 
         ## flags, message queues and class members
         self.cfg = cfg
@@ -65,7 +65,7 @@ class RosWrapper:
         rospy.Service(self.cfg.ros.srv['set_flag'], SetBool, self.srv_set_flag)
 
         ## start state machine
-        rospy.loginfo('node sdf_nmpc started successfully')
+        rospy.loginfo('[sdf_nmpc] node started successfully')
         self.running = False
         self.sm_manager()
 
@@ -86,7 +86,7 @@ class RosWrapper:
             if not self.running:
                 if self.x0 is not None and self.ref is not None:
                     self.running = True
-                    rospy.loginfo('first reference received, starting mpc')
+                    rospy.loginfo('[sdf_nmpc] first reference received, starting mpc')
             else:
                 now = rospy.Time.now().to_sec()
                 if now > self.t_ref + self.cfg.mpc.timeout_ref:
@@ -94,15 +94,15 @@ class RosWrapper:
                     self.x0 = None
                     self.ref = None
                     self.running = False
-                    rospy.logwarn('reference timeout, resuming to idle mode')
+                    rospy.logwarn('[sdf_nmpc] reference timeout, resuming to idle mode')
                 elif self.sdf_flag and now > self.t_img + self.cfg.mpc.timeout_img:
                     self.sdf_flag = False
                     self.nmpc.reset_latent()
-                    rospy.logwarn('observation timeout, disabling constraints')
+                    rospy.logwarn('[sdf_nmpc] observation timeout, disabling constraints')
                 self.control_iteration()
                 if self.failed:
                     self.reset()
-                    rospy.logerr('NMPC FAILED, disabling constraints')
+                    rospy.logerr('[sdf_nmpc] NMPC FAILED, disabling constraints')
                 self.publish_viz()
                 self.publish_cmd()
 
@@ -227,7 +227,7 @@ class RosWrapper:
 
     def srv_set_flag(self, srv):
         if srv.data and not (self.nmpc.p[0,self.cfg.mpc.p_idx.W_p_Co]).any():
-            rospy.logerr('no image received, cannot activate constraints')
+            rospy.logerr('[sdf_nmpc] no image received, cannot activate constraints')
         else:
             self.sdf_flag = srv.data
         return SetBoolResponse(success=self.sdf_flag, message='')
@@ -241,9 +241,9 @@ if __name__ == '__main__':
     if rospy.get_param('/rebuild'):
         path = os.path.join(COLPREDMPC_CONFIG_DIR, cfg_file)
 
-        rospy.loginfo(f'building solver for {path}')
+        rospy.loginfo(f'[sdf_nmpc] building solver for {path}')
         build_solver(path)
-        rospy.loginfo(f'solver built')
+        rospy.loginfo(f'[sdf_nmpc] solver built')
 
     cfg = Config(os.path.join(COLPREDMPC_CONFIG_DIR, cfg_file))
     ros_wrapper = RosWrapper(cfg)

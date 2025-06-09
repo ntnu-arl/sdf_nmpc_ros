@@ -85,7 +85,7 @@ class RosWrapper:
         self.sub_ref = rospy.Subscriber(self.cfg.ros.topics.viz['ref_horizon'], Path, self.cb_path_ref, tcp_nodelay=True, queue_size=1)
         self.sub_traj = rospy.Subscriber(self.cfg.ros.topics.viz['traj_horizon'], Path, self.cb_path_traj, tcp_nodelay=True, queue_size=1)
 
-        rospy.loginfo('node viz_sdf_2d started successfully')
+        rospy.loginfo('[viz_sdf_2d] node started successfully')
         rospy.spin()
 
     def gen_image(self):

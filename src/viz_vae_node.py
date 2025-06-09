@@ -19,7 +19,7 @@ class RosWrapper:
         self.pub_img = rospy.Publisher(topics.viz['img_vae'], Image, tcp_nodelay=True, queue_size=1)
         self.sub_latent = rospy.Subscriber(topics['latent'], Latent, self.cb_latent, tcp_nodelay=True, queue_size=1)
 
-        rospy.loginfo('node viz_vae started successfully')
+        rospy.loginfo('[viz_vae] node started successfully')
         rospy.spin()
 
     def cb_latent(self, msg):

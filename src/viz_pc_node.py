@@ -42,6 +42,7 @@ class RosWrapper:
         self.pub_min = rospy.Publisher(f'{topics["obs"]}_min', Float32, tcp_nodelay=True, queue_size=1)
         self.sub_img = rospy.Subscriber(topics['obs'], Image, self.cb, tcp_nodelay=True, queue_size=1)
 
+        rospy.loginfo('[viz_pc] node started successfully')
         rospy.spin()
 
     def pc_to_msg(self, ts, pc, norm=0.0, val=0.0):

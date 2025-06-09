@@ -41,7 +41,7 @@ class RosWrapper:
         rospy.Service(self.cfg.ros.srv['goto'], Trigger, self.srv_goto)
         rospy.Service(self.cfg.ros.srv['stop'], Trigger, self.srv_stop)
 
-        rospy.loginfo('node ref_gen started successfully')
+        rospy.loginfo('[ref_gen] node started successfully')
         self.state = 'start'
         self.sm_manager()
 
@@ -59,17 +59,17 @@ class RosWrapper:
                 if self.x0 is not None:
                     if self.cfg.ref.ref_mode == 'joystick':
                         self.state = 'joystick'
-                        rospy.loginfo('odometry received, listening to joystick inputs')
+                        rospy.loginfo('[ref_gen] odometry received, listening to joystick inputs')
                     else:
                         self.state = 'waypoint'
-                        rospy.loginfo('odometry received, tracking current position')
+                        rospy.loginfo('[ref_gen] odometry received, tracking current position')
             elif self.state == 'joystick':
                 ## check if joystick command is outdated
                 now = rospy.Time.now().to_sec()
                 if now > self.t_joy + self.timeout_joy:
                     self.t_joy = now
                     self.cmd_joy = [0, 0, 0, 0]
-                    rospy.logwarn('timeout joystick command, defaulting to 0')
+                    rospy.logwarn('[ref_gen] timeout joystick command, defaulting to 0')
                 ref_traj = self.ref_gen.gen_ref_joystick(self.cmd_joy)
             elif self.state == 'waypoint':
                 if not self.wps:
@@ -81,7 +81,7 @@ class RosWrapper:
                             self.wps.pop(0)
                         elif not self.printed:
                             self.printed = True
-                            rospy.loginfo('last waypoint reached, hovering')
+                            rospy.loginfo('[ref_gen] last waypoint reached, hovering')
                     ref_traj = self.ref_gen.gen_ref_list_wps(self.wps[:1] if self.cfg.ref.stop_and_go else self.wps)
             if ref_traj:
                 self.publish(ref_traj)

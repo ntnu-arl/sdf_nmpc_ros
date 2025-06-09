@@ -27,7 +27,7 @@ class RosWrapper:
         self.sub_wps = rospy.Subscriber(self.cfg.ros.topics['ref_wps'], Path, self.cb_wps, tcp_nodelay=True, queue_size=1)
         self.sub_ref = rospy.Subscriber(self.cfg.ros.topics['ref_horizon'], MultiDOFJointTrajectory, self.cb_horizon, tcp_nodelay=True, queue_size=1)
 
-        rospy.loginfo('node viz_markers started successfully')
+        rospy.loginfo('[viz_markers] node started successfully')
         rospy.spin()
 
     def cb_state(self, msg):

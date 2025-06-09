@@ -38,7 +38,7 @@ class RosWrapper:
         self.pub_pc = rospy.Publisher(self.cfg.ros.topics.viz['lvlset'], PointCloud2, queue_size=1)
         self.sub_latent = rospy.Subscriber(self.cfg.ros.topics['latent'], Latent, self.cb_latent, tcp_nodelay=True, queue_size=1)
 
-        rospy.loginfo('node viz_sdf_3d started successfully')
+        rospy.loginfo('[viz_sdf_3d] node started successfully')
         rospy.spin()
 
     def pc_to_msg(self, ts, pc, norm=0.0, val=0.0):
