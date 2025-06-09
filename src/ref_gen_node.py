@@ -10,7 +10,7 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import PoseStamped, Transform, Twist, Quaternion, Vector3
 from nav_msgs.msg import Path, Odometry
 from trajectory_msgs.msg import MultiDOFJointTrajectory, MultiDOFJointTrajectoryPoint
-from std_srvs.srv import Trigger, TriggerResponse
+from std_srvs.srv import Trigger, TriggerResponse, SetBool, SetBoolResponse
 
 
 class RosWrapper:
@@ -34,6 +34,8 @@ class RosWrapper:
         self.sub_wps = rospy.Subscriber(self.cfg.ros.topics['ref_wps'], Path, self.cb_wps, tcp_nodelay=True, queue_size=1)
         self.sub_joystick = rospy.Subscriber(self.cfg.ros.topics['joystick'], Twist, self.cb_joystick, tcp_nodelay=True, queue_size=1)
 
+        rospy.Service(self.cfg.ros.srv['get_yaw_mode'], Trigger, self.srv_get_yaw_mode)
+        rospy.Service(self.cfg.ros.srv['set_yaw_mode'], SetBool, self.srv_set_yaw_mode)
         rospy.Service(self.cfg.ros.srv['hover'], Trigger, self.srv_hover)
         rospy.Service(self.cfg.ros.srv['takeoff'], Trigger, self.srv_takeoff)
         rospy.Service(self.cfg.ros.srv['goto'], Trigger, self.srv_goto)
@@ -126,6 +128,13 @@ class RosWrapper:
         W_q_B = [pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z]
         self.x0 = np.concatenate([W_p_B, W_q_B])
         self.ref_gen.x0 = self.x0
+
+    def srv_get_yaw_mode(self, srv):
+        return TriggerResponse(success=self.ref_gen.force_yaw_current, message='')
+
+    def srv_set_yaw_mode(self, srv):
+        self.ref_gen.force_yaw_current = srv.data
+        return SetBoolResponse(success=self.ref_gen.force_yaw_current, message='')
 
     def srv_hover(self, srv):
         ref_hover = self.ref_gen.from_x0()[0]
