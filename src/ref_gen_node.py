@@ -13,6 +13,23 @@ from trajectory_msgs.msg import MultiDOFJointTrajectory, MultiDOFJointTrajectory
 from std_srvs.srv import Trigger, TriggerResponse, SetBool, SetBoolResponse
 
 
+class LowPassFilter:
+    def __init__(self, alpha):
+        self.alpha = alpha
+        self.state = None
+
+    def filter(self, input):
+        if type(input) == list:
+            input = np.array(input)
+        if self.state is None:
+            self.state = input
+        else:
+            self.state = self.alpha * input + (1-self.alpha) * self.state
+
+        return self.state
+
+
+
 class RosWrapper:
     def __init__(self, cfg):
         rospy.init_node('ref_gen')
@@ -22,7 +39,8 @@ class RosWrapper:
         self.rate = rospy.Rate(200)
         self.x0 = None
         self.wps = []
-        self.cmd_joy = [0, 0, 0, 0]
+        self.joy_lp = LowPassFilter(self.cfg.ref.joystick_lp_alpha)
+        self.joy_lp.filter([0, 0, 0, 0])
         self.t_joy = 0
         self.timeout_joy = 0.5  # [s]
 
@@ -68,9 +86,9 @@ class RosWrapper:
                 now = rospy.Time.now().to_sec()
                 if now > self.t_joy + self.timeout_joy:
                     self.t_joy = now
-                    self.cmd_joy = [0, 0, 0, 0]
+                    self.joy_lp.filter([0, 0, 0, 0])
                     rospy.logwarn('[ref_gen] timeout joystick command, defaulting to 0')
-                ref_traj = self.ref_gen.gen_ref_joystick(self.cmd_joy)
+                ref_traj = self.ref_gen.gen_ref_joystick(self.joy_lp.state)
             elif self.state == 'waypoint':
                 if not self.wps:
                     ref_traj = self.ref_gen.from_x0()
@@ -122,7 +140,7 @@ class RosWrapper:
         self.t_joy = rospy.Time.now().to_sec()
         W_R_B = quat2rot(self.x0[3:])
         B_v = W_R_B @ [msg.linear.x, msg.linear.y, msg.linear.z]
-        self.cmd_joy = [*B_v, msg.angular.z]
+        self.joy_lp.filter([*B_v, msg.angular.z])
 
     def cb_state(self, msg):
         pose = msg.pose.pose
