@@ -22,7 +22,7 @@ class RosWrapper:
         self.rate = rospy.Rate(200)
         self.x0 = None
         self.wps = []
-        self.cmd_joy = []
+        self.cmd_joy = [0, 0, 0, 0]
         self.t_joy = 0
         self.timeout_joy = 0.5  # [s]
 
