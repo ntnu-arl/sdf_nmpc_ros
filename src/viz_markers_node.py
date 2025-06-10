@@ -24,8 +24,8 @@ class RosWrapper:
         self.pub_wp = rospy.Publisher(topics.viz.markers['wp'], Marker, tcp_nodelay=False, queue_size=1)
         self.pub_dir = rospy.Publisher(topics.viz.markers['dir'], Marker, tcp_nodelay=False, queue_size=1)
         self.sub_state = rospy.Subscriber(topics['odom'], Odometry, self.cb_state, tcp_nodelay=True, queue_size=1)
-        self.sub_wps = rospy.Subscriber(self.cfg.ros.topics['ref_wps'], Path, self.cb_wps, tcp_nodelay=True, queue_size=1)
-        self.sub_ref = rospy.Subscriber(self.cfg.ros.topics['ref_horizon'], MultiDOFJointTrajectory, self.cb_horizon, tcp_nodelay=True, queue_size=1)
+        self.sub_wps = rospy.Subscriber(topics['ref_wps'], Path, self.cb_wps, tcp_nodelay=True, queue_size=1)
+        self.sub_ref = rospy.Subscriber(topics['ref_horizon'], MultiDOFJointTrajectory, self.cb_horizon, tcp_nodelay=True, queue_size=1)
 
         rospy.loginfo('[viz_markers] node started successfully')
         rospy.spin()
