@@ -4,7 +4,7 @@ from collision_predictor_mpc import COLPREDMPC_CONFIG_DIR
 from collision_predictor_mpc.utils.config import Config
 from collision_predictor_mpc.utils.reference import Waypoint
 from collision_predictor_mpc.ref_gen import RefGen
-from collision_predictor_mpc.utils.math import yaw2quat
+from collision_predictor_mpc.utils.math import yaw2quat, quat2rot
 import rospy
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseStamped, Transform, Twist, Quaternion, Vector3
@@ -120,7 +120,9 @@ class RosWrapper:
 
     def cb_joystick(self, msg):
         self.t_joy = rospy.Time.now().to_sec()
-        self.cmd_joy = [msg.linear.x, msg.linear.y, msg.linear.z, msg.angular.z]
+        W_R_B = quat2rot(self.x0[3:])
+        B_v = W_R_B @ [msg.linear.x, msg.linear.y, msg.linear.z]
+        self.cmd_joy = [*B_v, msg.angular.z]
 
     def cb_state(self, msg):
         pose = msg.pose.pose
