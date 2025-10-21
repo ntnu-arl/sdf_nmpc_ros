@@ -26,6 +26,7 @@ class RosWrapper:
 
     def cb_img(self, msg):
         img = np.ndarray((msg.height, msg.width), self.cfg.sensor.dtype, msg.data, 0)
+        # img = np.frombuffer(msg.data, dtype=np.uint8).reshape((msg.height, msg.width))
 
         self.pub_sdf.publish(Float32(np.min(img)))
 

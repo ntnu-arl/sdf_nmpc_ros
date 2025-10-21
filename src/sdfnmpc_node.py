@@ -207,6 +207,7 @@ class RosWrapper:
             ts, xs = zip(*self.state_queue)  # tranpose
             x = xs[np.argmin(np.abs(np.array(ts) - self.t_img))]
             self.nmpc.set_latent(msg.latent.data, x[:3], quat2rot(x[3:7]))
+            print("Latent received")
 
     def cb_state(self, msg):
         pose = msg.pose.pose
