@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="cfg" default="gz"/>
+    <arg name="cfg" default="gbplanner_rotors"/>
 
     <param name="/cfg" value="$(arg cfg)"/>
 

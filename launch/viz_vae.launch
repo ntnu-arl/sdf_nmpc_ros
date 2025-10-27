@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="cfg" default="gbplanner_rotors"/>
-    <param name="/cfg" value="$(arg cfg)"/>
+    <!-- <param name="/cfg" value="$(arg cfg)"/> -->
     <node pkg="sdf_nmpc_ros" type="viz_vae_node.py" name="viz_vae_node" output="screen"/>
 </launch>

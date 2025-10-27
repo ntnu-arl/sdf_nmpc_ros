@@ -207,7 +207,7 @@ class RosWrapper:
             ts, xs = zip(*self.state_queue)  # tranpose
             x = xs[np.argmin(np.abs(np.array(ts) - self.t_img))]
             self.nmpc.set_latent(msg.latent.data, x[:3], quat2rot(x[3:7]))
-            print("Latent received")
+            # print("Latent received")
 
     def cb_state(self, msg):
         pose = msg.pose.pose
@@ -231,6 +231,7 @@ class RosWrapper:
             rospy.logerr('[sdf_nmpc] no image received, cannot activate constraints')
         else:
             self.sdf_flag = srv.data
+            print("SDF constraints set to:", self.sdf_flag)
         return SetBoolResponse(success=self.sdf_flag, message='')
 
 

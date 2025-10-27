@@ -21,6 +21,7 @@ class RosWrapper:
         self.lvlset = cfg.robot.size.xy + cfg.mpc.bound_margin # level-set to display
 
         self.sdf = torch.jit.load(f'{COLPREDMPC_TMP_DIR}/{self.cfg.files.sdf}')
+        print('Loaded SDF model from:', f'{COLPREDMPC_TMP_DIR}/{self.cfg.files.sdf}')
         self.sdf.to(self.cfg.nn.vae_device)
         self.sdf.eval()
 
