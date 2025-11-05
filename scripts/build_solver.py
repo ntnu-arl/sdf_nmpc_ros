@@ -20,7 +20,7 @@ if __name__ == '__main__':
     cfg_path = os.path.join(
         get_package_share_directory('sdf_nmpc_ros'),
         'config',
-        cfg_path
+        cfg_file
     )
     node.get_logger().info(f'building solver for {cfg_path}')
     build_solver(cfg_path)
