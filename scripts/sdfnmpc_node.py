@@ -152,8 +152,8 @@ class SdfNmpcNode(Node):
                 PositionTarget.IGNORE_PX + PositionTarget.IGNORE_PY + PositionTarget.IGNORE_PZ \
                 + PositionTarget.IGNORE_VX + PositionTarget.IGNORE_VY + PositionTarget.IGNORE_VZ \
                 + PositionTarget.IGNORE_YAW
-            msg.acceleration_or_force = Vector3(x=cmd_acc[0], y=cmd_acc[1], z=cmd_acc[2])
-            msg.yaw_rate = cmd_acc[3]
+            msg.acceleration_or_force = Vector3(x=float(cmd_acc[0]), y=float(cmd_acc[1]), z=float(cmd_acc[2]))
+            msg.yaw_rate = float(cmd_acc[3])
         self.pub_cmd.publish(msg)
 
     def publish_viz(self):
