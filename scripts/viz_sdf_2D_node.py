@@ -105,7 +105,8 @@ class VizSdf2DNode(Node):
     def gen_image(self):
         if self.points_sdf is not None:
             ## clear contours
-            [c.remove() for contour in self.data_contour if contour is not None for c in contour.collections]
+            # [c.remove() for contour in self.data_contour if contour is not None for c in contour.collections]
+            [contour.remove() for contour in self.data_contour if contour is not None]
 
             ## redo colormap + contours
             self.data_contour[0] = self.ax.contourf(
