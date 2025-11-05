@@ -1,9 +1,9 @@
-name: "sim_camera"
+name: "sim_gz_lidar"
 
 ## mission parameters
 ref:
     yaw_mode: align  # allowed modes: ref, align, current, zero
-    align_yaw_offset: 0  # yaw offset in align mode [rad]
+    align_yaw_offset: 3.1415  # yaw offset in align mode [rad]
     stop_and_turn:  # maximum yaw error above which the reference velocity is set to 0 to enable stop-and-turn behavior
         enable: False
         dang_min: 1  # angle threshold to trigger stop and turn [rad]
@@ -27,8 +27,8 @@ nn:
     size_latent: 128
     vae_device: cuda
     sdf_device: cpu
-    vae_weights: ijrr_paper/vae.pt
-    sdf_weights: ijrr_paper/sdf_90_25664.pt
+    vae_weights: ijrr_paper/vae_lidar.pt
+    sdf_weights: ijrr_paper/sdf_lidar_25664.pt
 
 ## ros-specific params
 ros:
@@ -123,15 +123,15 @@ robot:
 ## sensor
 sensor:
     sensor_extrinsics:
-        position: [0.180, 0, -0.025]
-        orientation: [0, 0, 0]
-    hfov: 0.7592
-    vfov: 0.4903
-    aspect_ratio: 1.778  # 16/9
+    position: [0, 0, 0.05]
+    orientation: [0, 0, 0]
+    hfov: 3.1415
+    vfov: 0.7854
+    aspect_ratio: 4
     dmax: 5
-    shape_imgs: [1, 270, 480]
-    is_depth: True
-    is_spherical: False
+    shape_imgs: [1, 128, 512]
+    is_depth: False
+    is_spherical: True
     is_normalized: False
     mm_resolution: 1000
     dtype: float32
