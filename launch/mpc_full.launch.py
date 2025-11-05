@@ -18,7 +18,7 @@ def generate_launch_description():
     
     cfg_file = os.path.join(
         get_package_share_directory('sdf_nmpc_ros'),
-        'config', 'sim_camera.yaml'
+        'config', 'sim_lidar.yaml'
     )
     # if not cfg_file.endswith('.yaml'):
     #         cfg_file += '.yaml'
@@ -92,7 +92,8 @@ def generate_launch_description():
     group = GroupAction([
         PushRosNamespace('/sdf_nmpc/'),  # this namespace is expected by rviz_nmpc_plugin
         SetRemap(src='odometry', dst='/rmf/odom'),
-        SetRemap(src='observation', dst='/rmf/cam/depth'),
+        # SetRemap(src='observation', dst='/rmf/cam/depth'),
+        SetRemap(src='observation', dst='/rmf/lidar/range'),
         SetRemap(src='cmd/acc', dst='/rmf/cmd/acc'),
         node_vae,
         node_ref_gen,
