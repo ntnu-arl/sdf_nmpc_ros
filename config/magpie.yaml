@@ -3,6 +3,7 @@ name: "magpie"
 ## mission parameters
 ref:
     yaw_mode: align  # allowed modes: ref, align, current, zero
+    align_yaw_offset: 3.1415  # yaw offset in align mode [rad]
     stop_and_turn:  # maximum yaw error above which the reference velocity is set to 0 to enable stop-and-turn behavior
         enable: False
         dang_min: 1  # angle threshold to trigger stop and turn [rad]
@@ -100,8 +101,8 @@ robot:
             - [0.09, 0.09, -0.005, 0, 0, 1]
             - [-0.09, -0.09, -0.005, 0, 0, 1]
     sensor_extrinsics:
-        position: [0.180, 0, -0.025]
-        orientation: [0, 0, 0]
+        position: [-0.05, 0, 0.03]
+        orientation: [0, 0, 3.14]
     size:
         xy: 0.22
         z: 0.1125
@@ -123,9 +124,6 @@ robot:
 
 ## sensor
 sensor:
-    sensor_extrinsics:
-        position: [0.0, 0, 0.0]
-        orientation: [0, 0, 0]
     hfov: 3.1415
     vfov: 0.7854
     aspect_ratio: 4
