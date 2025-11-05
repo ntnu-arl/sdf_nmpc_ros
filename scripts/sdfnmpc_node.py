@@ -2,6 +2,7 @@
 import os
 import collections
 import numpy as np
+import time
 
 import rclpy
 from rclpy.node import Node
@@ -94,11 +95,15 @@ class SdfNmpcNode(Node):
     def control_iteration(self):
         self.nmpc.set_sdf_flag(self.sdf_flag)
         self.nmpc.set_x0(self.x0)
+        st = time.time()
         fail_count = self.nmpc.solve()
+        et = time.time()
+        # print("MPC solve time: {:.1f} ms".format((et - st) * 1e3))
         self.failed = (fail_count == self.cfg.mpc.max_solver_fail)
 
     ## state machine
     def sm_tick(self):
+        # print("ticking")
         if not self.running:
             if self.x0 is not None and self.ref is not None:
                 self.running = True

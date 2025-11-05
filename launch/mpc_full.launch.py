@@ -11,14 +11,14 @@ def generate_launch_description():
     cfg = LaunchConfiguration('cfg')
     
     declare_args = [
-        DeclareLaunchArgument('use_sim_time', default_value='true'),
+        DeclareLaunchArgument('use_sim_time', default_value='false'),
     #     DeclareLaunchArgument('ns', default_value='sdf_nmpc', description='Common namespace for nmpc nodes'),
-        DeclareLaunchArgument('cfg', default_value='sim_camera.yaml', description='Config preset <cfg>.yaml'),
+        DeclareLaunchArgument('cfg', default_value='magpie.yaml', description='Config preset <cfg>.yaml'),
     ]
     
     cfg_file = os.path.join(
         get_package_share_directory('sdf_nmpc_ros'),
-        'config', 'sim_lidar.yaml'
+        'config', 'magpie.yaml'
     )
     # if not cfg_file.endswith('.yaml'):
     #         cfg_file += '.yaml'
@@ -91,15 +91,15 @@ def generate_launch_description():
 
     group = GroupAction([
         PushRosNamespace('/sdf_nmpc/'),  # this namespace is expected by rviz_nmpc_plugin
-        SetRemap(src='odometry', dst='/rmf/odom'),
-        # SetRemap(src='observation', dst='/rmf/cam/depth'),
-        SetRemap(src='observation', dst='/rmf/lidar/range'),
+        SetRemap(src='odometry', dst='/msf_core/odometry_50hz'),
+        SetRemap(src='observation', dst='/img_node/range_image'),
         SetRemap(src='cmd/acc', dst='/rmf/cmd/acc'),
+        SetRemap(src='wps', dst='/gbplanner_path'),
         node_vae,
         node_ref_gen,
         node_sdfnmpc,
-        node_viz_vae,
-        node_viz_sdf_2D,
+        # node_viz_vae,
+        # node_viz_sdf_2D
         # node_viz_sdf_3D,
     ])
     

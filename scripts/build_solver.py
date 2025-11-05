@@ -13,7 +13,7 @@ if __name__ == '__main__':
     node = Node('solver_builder')
 
     ## load config
-    node.declare_parameter('cfg', 'default.yaml')
+    node.declare_parameter('cfg', 'magpie.yaml')
     cfg_file = node.get_parameter('cfg').get_parameter_value().string_value
     if not cfg_file.endswith('.yaml'):
         cfg_file += '.yaml'
