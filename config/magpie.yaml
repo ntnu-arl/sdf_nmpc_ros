@@ -2,20 +2,20 @@ name: "magpie"
 
 ## mission parameters
 ref:
-    yaw_mode: align  # allowed modes: ref, align, current, zero
+    yaw_mode: ref  # allowed modes: ref, align, current, zero
     align_yaw_offset: 3.1415  # yaw offset in align mode [rad]
     stop_and_turn:  # maximum yaw error above which the reference velocity is set to 0 to enable stop-and-turn behavior
-        enable: False
+        enable: True
         dang_min: 1  # angle threshold to trigger stop and turn [rad]
-    yaw_align_dmin: 0.1  # minimum distance under which yaw alignment is disabled [m]
-    vref: 2  # norm of reference velocity [m/s]
+    yaw_align_dmin: 0.15  # minimum distance under which yaw alignment is disabled [m]
+    vref: 1.0  # norm of reference velocity [m/s]
     wzref: 1  # norm of reference yawrate [rad/s]
     zref: 2  # desired hovering z for takeoff [m]
 
 ## mission flags
 flags:
     simulation: False  # sim or hardware experiment
-    enable_sdf: True  # enable collision prediction
+    enable_sdf: False  # enable collision prediction
     sdf_cost: False  # use sdf in cost
     sdf_constraint: True  # use sdf in constraints
     vfov_constraint: False  # enable vertical FoV constraint
@@ -51,10 +51,10 @@ ros:
 mpc:
     model: att  # allowed models: acc, att, att_tau, rates, wrench, props
     weights:
-        pos:    [0, 0, 5]  # px, py, pz
-        vel:    [3, 3, 3]  # vx, vy, vz
-        att:    [50, 50, 100]  # roll, pitch, yaw
-        rates:  [0, 0, 3]  # wx, wy, wz
+        pos:    [0, 0, 3]  # px, py, pz
+        vel:    [5, 5, 3]  # vx, vy, vz
+        att:    [50, 50, 20]  # roll, pitch, yaw
+        rates:  [0, 0, 5]  # wx, wy, wz
         acc:    0.05  # typically small value, used to penalize acc or aacc if applicable
         slack_df:       [200, 50]  # slack weights (L1, L2) on df constraint
         slack_fov:      [20, 0]  # slack weights (L1, L2) on fov constraint
@@ -62,7 +62,7 @@ mpc:
     N: 10  # nb of shooting nodes
     T: 1.5  # lenght of horizon [s]
     bound_margin: 0.15  # safety margin for collision constraint [m]
-    control_loop_time: 20  # minimum control period [ms]
+    control_loop_time: 10  # minimum control period [ms]
     uniform_dt: True  # dt is uniformly sampled as T/N, or nonuniform to have denser sampling for the first shooting_nodes
     nb_short_nodes: 2  # number of shooting node with dense nonuniform sampling
     lm_reg: 10  # Levenberg Marquardt regularization value
@@ -107,14 +107,14 @@ robot:
         xy: 0.22
         z: 0.1125
     limits:
-        roll: 0.7
-        pitch: 0.7
+        roll: 0.3
+        pitch: 0.3
         vx: 3
         vy: 3
         vz: 3
         wx: 2
         wy: 2
-        wz: 3
+        wz: 1.0
         ax: 3
         ay: 3
         az: 3
