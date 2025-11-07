@@ -8,14 +8,14 @@ ref:
         enable: True
         dang_min: 1  # angle threshold to trigger stop and turn [rad]
     yaw_align_dmin: 0.15  # minimum distance under which yaw alignment is disabled [m]
-    vref: 1.0  # norm of reference velocity [m/s]
+    vref: 0.8 #1.0  # norm of reference velocity [m/s]
     wzref: 1  # norm of reference yawrate [rad/s]
     zref: 2  # desired hovering z for takeoff [m]
 
 ## mission flags
 flags:
     simulation: False  # sim or hardware experiment
-    enable_sdf: False  # enable collision prediction
+    enable_sdf: True  # enable collision prediction
     sdf_cost: False  # use sdf in cost
     sdf_constraint: True  # use sdf in constraints
     vfov_constraint: False  # enable vertical FoV constraint
@@ -37,10 +37,11 @@ ros:
     timeout_img: 1  # allowed time without new image before timing out controller [s]
     ref:
         ref_mode: topic  # allowed modes: topic, joystick
-        stop_and_go: True  # go to wp with 0 velocity instead of having a sliding window as reference    
-        wps: [[2.0, 0.0, 1.2, 0.0], [0.0, 0.0, 1.2, 0.0], [0.0, 2.0, 1.2, 0.0], [0.0, 0.0, 1.2, 0.0], ]  # list of waypoints in ref_mode == cfg [m, m, m, rad]
+        stop_and_go: False  # go to wp with 0 velocity instead of having a sliding window as reference    
+        # wps: [[2.0, 0.0, 1.2, 0.0], [0.0, 0.0, 1.2, 0.0], [0.0, 2.0, 1.2, 0.0], [0.0, 0.0, 1.2, 0.0], ]  # list of waypoints in ref_mode == cfg [m, m, m, rad]
+        wps: [[3.0, 0.0, 1.2, 3.14]]  # list of waypoints in ref_mode == cfg [m, m, m, rad]
 
-        wp_tol: 0.1 #0.8  # distance from wp below which it is considered explored and removed from the queue [m]
+        wp_tol: 0.5  # distance from wp below which it is considered explored and removed from the queue [m]
         joystick_lp_alpha: 0.9  # low-pass parameter for joystick cmd smoothing
     frames:
         world: world
@@ -51,8 +52,8 @@ ros:
 mpc:
     model: att  # allowed models: acc, att, att_tau, rates, wrench, props
     weights:
-        pos:    [3, 3, 3]  # px, py, pz
-        vel:    [5, 5, 3]  # vx, vy, vz
+        pos:    [0, 0, 2]  # px, py, pz
+        vel:    [5, 5, 4]  # vx, vy, vz
         att:    [50, 50, 20]  # roll, pitch, yaw
         rates:  [0, 0, 5]  # wx, wy, wz
         acc:    0.05  # typically small value, used to penalize acc or aacc if applicable
@@ -61,8 +62,8 @@ mpc:
         slack_brake:    None  # slack weights (L1, L2) on braking dist constraint
     N: 10  # nb of shooting nodes
     T: 1.5  # lenght of horizon [s]
-    bound_margin: 0.15  # safety margin for collision constraint [m]
-    control_loop_time: 10  # minimum control period [ms]
+    bound_margin: 0.5  # safety margin for collision constraint [m]
+    control_loop_time: 1 #10  # minimum control period [ms]
     uniform_dt: True  # dt is uniformly sampled as T/N, or nonuniform to have denser sampling for the first shooting_nodes
     nb_short_nodes: 2  # number of shooting node with dense nonuniform sampling
     lm_reg: 10  # Levenberg Marquardt regularization value

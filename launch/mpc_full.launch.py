@@ -91,9 +91,10 @@ def generate_launch_description():
 
     group = GroupAction([
         PushRosNamespace('/sdf_nmpc/'),  # this namespace is expected by rviz_nmpc_plugin
-        SetRemap(src='odometry', dst='/msf_core/odometry_50hz'),
+        # SetRemap(src='odometry', dst='/msf_core/odometry_50hz'),
+        SetRemap(src='odometry', dst='/msf_core/odometry'),
         SetRemap(src='observation', dst='/img_node/range_image'),
-        SetRemap(src='cmd/acc', dst='/rmf/cmd/acc'),
+        SetRemap(src='cmd/acc', dst='/mavros/setpoint_raw/local'),
         SetRemap(src='wps', dst='/gbplanner_path'),
         node_vae,
         node_ref_gen,
