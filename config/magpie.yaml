@@ -37,10 +37,10 @@ ros:
     timeout_img: 1  # allowed time without new image before timing out controller [s]
     ref:
         ref_mode: topic  # allowed modes: topic, joystick
-        stop_and_go: False  # go to wp with 0 velocity instead of having a sliding window as reference    
-        wps: []  # list of waypoints in ref_mode == cfg [m, m, m, rad]
+        stop_and_go: True  # go to wp with 0 velocity instead of having a sliding window as reference    
+        wps: [[2.0, 0.0, 1.2, 0.0], [0.0, 0.0, 1.2, 0.0], [0.0, 2.0, 1.2, 0.0], [0.0, 0.0, 1.2, 0.0], ]  # list of waypoints in ref_mode == cfg [m, m, m, rad]
 
-        wp_tol: 0.8  # distance from wp below which it is considered explored and removed from the queue [m]
+        wp_tol: 0.1 #0.8  # distance from wp below which it is considered explored and removed from the queue [m]
         joystick_lp_alpha: 0.9  # low-pass parameter for joystick cmd smoothing
     frames:
         world: world
@@ -51,7 +51,7 @@ ros:
 mpc:
     model: att  # allowed models: acc, att, att_tau, rates, wrench, props
     weights:
-        pos:    [0, 0, 3]  # px, py, pz
+        pos:    [3, 3, 3]  # px, py, pz
         vel:    [5, 5, 3]  # vx, vy, vz
         att:    [50, 50, 20]  # roll, pitch, yaw
         rates:  [0, 0, 5]  # wx, wy, wz
