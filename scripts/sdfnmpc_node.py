@@ -38,7 +38,7 @@ class SdfNmpcNode(Node):
         self.nmpc = NMPC(self.cfg)
 
         ctrl_dt = float(self.cfg.mpc.control_loop_time) * 1e-3
-        self.state_queue = collections.deque(maxlen=10)
+        self.state_queue = collections.deque(maxlen=25)
 
         self.x0 = None
         self.ref = None
@@ -95,9 +95,9 @@ class SdfNmpcNode(Node):
     def control_iteration(self):
         self.nmpc.set_sdf_flag(self.sdf_flag)
         self.nmpc.set_x0(self.x0)
-        st = time.time()
+        # st = time.time()
         fail_count = self.nmpc.solve()
-        et = time.time()
+        # et = time.time()
         # print("MPC solve time: {:.1f} ms".format((et - st) * 1e3))
         self.failed = (fail_count == self.cfg.mpc.max_solver_fail)
 
@@ -167,7 +167,7 @@ class SdfNmpcNode(Node):
         ## nmpc solving time
         self.pub_cpt.publish(Float32(data=float(self.nmpc.ocp.get_t())))
         ## neural sdf value
-        self.pub_sdf.publish(Float32(data=float(self.nmpc.eval(0)[0])))
+        # self.pub_sdf.publish(Float32(data=float(self.nmpc.eval(0)[0])))
 
         if not self.failed:
             ## predicted traj
@@ -185,19 +185,19 @@ class SdfNmpcNode(Node):
             self.pub_cmd_traj.publish(msg_traj)
 
             ## command
-            cmd_acc = self.nmpc.get_cmd_acc() if not self.failed else self.nmpc.cmd_acc_hover
-            msg_cmd = TwistStamped()
-            msg_cmd.header = Header(
-                stamp=self.get_clock().now().to_msg(),
-                frame_id=self.cfg.ros.frames.body
-            )
-            msg_cmd.twist.linear.x = cmd_acc[0]
-            msg_cmd.twist.linear.y = cmd_acc[1]
-            msg_cmd.twist.linear.z = cmd_acc[2]
-            msg_cmd.twist.angular.x = 0.0
-            msg_cmd.twist.angular.y = 0.0
-            msg_cmd.twist.angular.z = cmd_acc[3]
-            self.pub_cmd_viz.publish(msg_cmd)
+            # cmd_acc = self.nmpc.get_cmd_acc() if not self.failed else self.nmpc.cmd_acc_hover
+            # msg_cmd = TwistStamped()
+            # msg_cmd.header = Header(
+            #     stamp=self.get_clock().now().to_msg(),
+            #     frame_id=self.cfg.ros.frames.body
+            # )
+            # msg_cmd.twist.linear.x = cmd_acc[0]
+            # msg_cmd.twist.linear.y = cmd_acc[1]
+            # msg_cmd.twist.linear.z = cmd_acc[2]
+            # msg_cmd.twist.angular.x = 0.0
+            # msg_cmd.twist.angular.y = 0.0
+            # msg_cmd.twist.angular.z = cmd_acc[3]
+            # self.pub_cmd_viz.publish(msg_cmd)
 
     ## callbacks
     def cb_ref(self, msg: MultiDOFJointTrajectory):
