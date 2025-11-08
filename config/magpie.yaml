@@ -5,10 +5,10 @@ ref:
     yaw_mode: ref  # allowed modes: ref, align, current, zero
     align_yaw_offset: 3.1415  # yaw offset in align mode [rad]
     stop_and_turn:  # maximum yaw error above which the reference velocity is set to 0 to enable stop-and-turn behavior
-        enable: True
+        enable: False
         dang_min: 1  # angle threshold to trigger stop and turn [rad]
     yaw_align_dmin: 0.15  # minimum distance under which yaw alignment is disabled [m]
-    vref: 0.8 #1.0  # norm of reference velocity [m/s]
+    vref: 1.25 #1.0  # norm of reference velocity [m/s]
     wzref: 1  # norm of reference yawrate [rad/s]
     zref: 2  # desired hovering z for takeoff [m]
 
@@ -39,7 +39,7 @@ ros:
         ref_mode: topic  # allowed modes: topic, joystick
         stop_and_go: False  # go to wp with 0 velocity instead of having a sliding window as reference    
         # wps: [[2.0, 0.0, 1.2, 0.0], [0.0, 0.0, 1.2, 0.0], [0.0, 2.0, 1.2, 0.0], [0.0, 0.0, 1.2, 0.0], ]  # list of waypoints in ref_mode == cfg [m, m, m, rad]
-        wps: [[3.0, 0.0, 1.2, 3.14]]  # list of waypoints in ref_mode == cfg [m, m, m, rad]
+        wps: [[2.0, 0.0, 1.2, 0.0], [0.0, 0.0, 1.2, 0.0]]  # list of waypoints in ref_mode == cfg [m, m, m, rad]
 
         wp_tol: 0.5  # distance from wp below which it is considered explored and removed from the queue [m]
         joystick_lp_alpha: 0.9  # low-pass parameter for joystick cmd smoothing
@@ -52,11 +52,11 @@ ros:
 mpc:
     model: att  # allowed models: acc, att, att_tau, rates, wrench, props
     weights:
-        pos:    [0, 0, 2]  # px, py, pz
-        vel:    [5, 5, 4]  # vx, vy, vz
+        pos:    [3, 3, 3]  # px, py, pz 0
+        vel:    [5, 5, 5]  # vx, vy, vz 3
         att:    [50, 50, 20]  # roll, pitch, yaw
         rates:  [0, 0, 5]  # wx, wy, wz
-        acc:    0.05  # typically small value, used to penalize acc or aacc if applicable
+        acc:    0.25  # typically small value, used to penalize acc or aacc if applicable
         slack_df:       [200, 50]  # slack weights (L1, L2) on df constraint
         slack_fov:      [20, 0]  # slack weights (L1, L2) on fov constraint
         slack_brake:    None  # slack weights (L1, L2) on braking dist constraint
@@ -108,8 +108,8 @@ robot:
         xy: 0.22
         z: 0.1125
     limits:
-        roll: 0.3
-        pitch: 0.3
+        roll: 0.15 # 0.3
+        pitch: 0.15 # 0.3
         vx: 3
         vy: 3
         vz: 3
@@ -119,7 +119,7 @@ robot:
         ax: 3
         ay: 3
         az: 3
-        gamma: 20  # maximum mass-normalized thrust
+        gamma: 15 #20  # maximum mass-normalized thrust
         torques: 0  # maximum inertia-normalized body torques
         wp: 25
 
