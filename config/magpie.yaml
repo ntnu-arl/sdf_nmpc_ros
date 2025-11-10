@@ -8,7 +8,7 @@ ref:
         enable: False
         dang_min: 1  # angle threshold to trigger stop and turn [rad]
     yaw_align_dmin: 0.15  # minimum distance under which yaw alignment is disabled [m]
-    vref: 1.25 #1.0  # norm of reference velocity [m/s]
+    vref: 1.0  # norm of reference velocity [m/s]
     wzref: 1  # norm of reference yawrate [rad/s]
     zref: 2  # desired hovering z for takeoff [m]
 
@@ -52,7 +52,7 @@ ros:
 mpc:
     model: att  # allowed models: acc, att, att_tau, rates, wrench, props
     weights:
-        pos:    [3, 3, 3]  # px, py, pz 0
+        pos:    [5, 5, 3]  # px, py, pz 0
         vel:    [5, 5, 5]  # vx, vy, vz 3
         att:    [50, 50, 20]  # roll, pitch, yaw
         rates:  [0, 0, 5]  # wx, wy, wz
