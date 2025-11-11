@@ -117,16 +117,16 @@ class RefGenNode(Node):
         path.header = traj.header
 
         for r in ref_traj:
-            rot = Quaternion(w=r.q[0], x=r.q[1], y=r.q[2], z=r.q[3])
+            rot = Quaternion(w=float(r.q[0]), x=float(r.q[1]), y=float(r.q[2]), z=float(r.q[3]))
 
             traj.points.append(MultiDOFJointTrajectoryPoint(
                 transforms=[Transform(
-                    translation=Vector3(x=r.p[0], y=r.p[1], z=r.p[2]),
+                    translation=Vector3(x=float(r.p[0]), y=float(r.p[1]), z=float(r.p[2])),
                     rotation=rot,
                 )],
                 velocities=[Twist(
-                    linear=Vector3(x=r.v[0], y=r.v[1], z=r.v[2]),
-                    angular=Vector3(x=0., y=0., z=r.wz),
+                    linear=Vector3(x=float(r.v[0]), y=float(r.v[1]), z=float(r.v[2])),
+                    angular=Vector3(x=0., y=0., z=float(r.wz)),
                 )],
                 accelerations=[Twist()],
                 time_from_start=Duration(sec=0, nanosec=0)
@@ -134,7 +134,7 @@ class RefGenNode(Node):
 
             pose = PoseStamped()
             pose.header = path.header
-            pose.pose.position = Point(x=r.p[0], y=r.p[1], z=r.p[2])
+            pose.pose.position = Point(x=float(r.p[0]), y=float(r.p[1]), z=float(r.p[2]))
             pose.pose.orientation = rot
             path.poses.append(pose)
 

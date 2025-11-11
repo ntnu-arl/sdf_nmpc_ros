@@ -37,7 +37,7 @@ class SdfNmpcNode(Node):
         self.nmpc = NMPC(self.cfg)
 
         ctrl_dt = float(self.cfg.mpc.control_loop_time) * 1e-3
-        self.state_queue = collections.deque(maxlen=10)
+        self.state_queue = collections.deque(maxlen=25)
 
         self.x0 = None
         self.ref = None
