@@ -15,10 +15,10 @@ from mavros_msgs.msg import PositionTarget
 # from mav_msgs.msg import Actuators
 from std_srvs.srv import Trigger, SetBool
 
-from collision_predictor_mpc.utils.config import Config
-from collision_predictor_mpc.controller import NMPC
-from collision_predictor_mpc.utils.reference import Ref
-from collision_predictor_mpc.utils.math import quat2rot
+from sdf_nmpc.utils.config import Config
+from sdf_nmpc.controller import Nmpc
+from sdf_nmpc.utils.reference import Ref
+from sdf_nmpc.utils.math import quat2rot
 from sdf_nmpc_ros.msg import Latent
 
 
@@ -34,7 +34,7 @@ class SdfNmpcNode(Node):
         self.declare_parameter('cfg', 'default.yaml')
         cfg_file = self.get_parameter('cfg').get_parameter_value().string_value
         self.cfg = Config(cfg_file)
-        self.nmpc = NMPC(self.cfg)
+        self.nmpc = Nmpc(self.cfg)
 
         ctrl_dt = float(self.cfg.mpc.control_loop_time) * 1e-3
         self.state_queue = collections.deque(maxlen=25)

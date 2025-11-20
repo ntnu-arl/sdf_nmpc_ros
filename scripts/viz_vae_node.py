@@ -8,8 +8,8 @@ from ament_index_python.packages import get_package_share_directory
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import Image
 
-from collision_predictor_mpc.utils.config import Config
-from collision_predictor_mpc.vae import VaeWrapper
+from sdf_nmpc.utils.config import Config
+from sdf_nmpc.vae import VaeWrapper
 from sdf_nmpc_ros.msg import Latent
 
 

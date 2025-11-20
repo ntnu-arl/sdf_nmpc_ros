@@ -9,8 +9,8 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from std_msgs.msg import Float32MultiArray, Float32
 from sensor_msgs.msg import Image
 
-from collision_predictor_mpc.utils.config import Config
-from collision_predictor_mpc.vae import VaeWrapper
+from sdf_nmpc.utils.config import Config
+from sdf_nmpc.vae import VaeWrapper
 from sdf_nmpc_ros.msg import Latent
 
 

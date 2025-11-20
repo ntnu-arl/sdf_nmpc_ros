@@ -1,9 +1,9 @@
-name: "sim_gz_lidar"
+name: "sim_lidar"
 
 ## mission parameters
 ref:
     yaw_mode: align  # allowed modes: ref, align, current, zero
-    align_yaw_offset: 3.1415  # yaw offset in align mode [rad]
+    align_yaw_offset: 0  # yaw offset in align mode [rad]
     stop_and_turn:  # maximum yaw error above which the reference velocity is set to 0 to enable stop-and-turn behavior
         enable: False
         dang_min: 1  # angle threshold to trigger stop and turn [rad]
@@ -27,8 +27,8 @@ nn:
     size_latent: 128
     vae_device: cuda
     sdf_device: cpu
-    vae_weights: ijrr_paper/vae_lidar.pt
-    sdf_weights: ijrr_paper/sdf_lidar_25664.pt
+    vae_weights: vae_lidar.pt
+    sdf_weights: sdf_lidar_25664.pt
 
 ## ros-specific params
 ros:

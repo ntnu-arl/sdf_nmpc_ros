@@ -9,20 +9,20 @@ import os
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     ns = LaunchConfiguration('ns')
-    cfg = LaunchConfiguration('cfg')
-    build = LaunchConfiguration('build')
+    # cfg = LaunchConfiguration('cfg')
+    # build = LaunchConfiguration('build')
 
     declare_args = [
         DeclareLaunchArgument('use_sim_time', default_value='true'),
         DeclareLaunchArgument('ns', default_value='sdf_nmpc', description='Common namespace for nmpc nodes'),
-        DeclareLaunchArgument('cfg', default_value='sim_camera.yaml', description='Config preset <cfg>.yaml'),
-        DeclareLaunchArgument('build', default_value='false', description='Run pre-build step before starting nodes'),
+        # DeclareLaunchArgument('cfg', default_value='sim_camera.yaml', description='Config preset <cfg>.yaml'),
+        # # DeclareLaunchArgument('build', default_value='false', description='Run pre-build step before starting nodes'),
     ]
 
     cfg_file = PathJoinSubstitution([
         get_package_share_directory('sdf_nmpc_ros'),
         'config',
-        cfg
+        'sim_lidar.yaml'
     ])
 
     node_vae = Node(
@@ -59,38 +59,38 @@ def generate_launch_description():
     )
     
 
-    # node_viz_vae = Node(
-    #     package='sdf_nmpc_ros',
-    #     executable='viz_vae_node.py',
-    #     name='viz_vae',
-    #     parameters=[{
-    #         'cfg': cfg_file,
-    #         'use_sim_time': use_sim_time,
-    #     }],
-    #     output='screen'
-    # )
+    node_viz_vae = Node(
+        package='sdf_nmpc_ros',
+        executable='viz_vae_node.py',
+        name='viz_vae',
+        parameters=[{
+            'cfg': cfg_file,
+            'use_sim_time': use_sim_time,
+        }],
+        output='screen'
+    )
 
-    # node_viz_sdf_2D = Node(
-    #     package='sdf_nmpc_ros',
-    #     executable='viz_sdf_2D_node.py',
-    #     name='viz_sdf_2D',
-    #     parameters=[{
-    #         'cfg': cfg_file,
-    #         'use_sim_time': use_sim_time
-    #     }],
-    #     output='screen'
-    # )
+    node_viz_sdf_2D = Node(
+        package='sdf_nmpc_ros',
+        executable='viz_sdf_2D_node.py',
+        name='viz_sdf_2D',
+        parameters=[{
+            'cfg': cfg_file,
+            'use_sim_time': use_sim_time
+        }],
+        output='screen'
+    )
 
-    # node_viz_sdf_3D = Node(
-    #     package='sdf_nmpc_ros',
-    #     executable='viz_sdf_3D_node.py',
-    #     name='viz_sdf_3D',
-    #     parameters=[{
-    #         'cfg': cfg_file,
-    #         'use_sim_time': use_sim_time
-    #     }],
-    #     output='screen'
-    # )
+    node_viz_sdf_3D = Node(
+        package='sdf_nmpc_ros',
+        executable='viz_sdf_3D_node.py',
+        name='viz_sdf_3D',
+        parameters=[{
+            'cfg': cfg_file,
+            'use_sim_time': use_sim_time
+        }],
+        output='screen'
+    )
 
     node_rviz = Node(
         package='rviz2',
@@ -109,9 +109,9 @@ def generate_launch_description():
         node_ref_gen,
         node_sdfnmpc,
         node_rviz,
-        # node_viz_vae,
-        # node_viz_sdf_2D,
-        # node_viz_sdf_3D,
+        node_viz_vae,
+        node_viz_sdf_2D,
+        node_viz_sdf_3D,
     ])
     
     return LaunchDescription(declare_args + [group])

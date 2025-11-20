@@ -10,9 +10,9 @@ from std_msgs.msg import Header
 from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
 
-from collision_predictor_mpc import COLPREDMPC_TMP_DIR
-from collision_predictor_mpc.utils.config import Config
-from collision_predictor_mpc.utils.pos_sampler import PosSampler
+from sdf_nmpc import default_data_dir
+from sdf_nmpc.utils.config import Config
+from sdf_nmpc.utils.pos_sampler import PosSampler
 from sdf_nmpc_ros.msg import Latent
 
 
@@ -32,7 +32,7 @@ class VizSdf3DNode(Node):
         self.lvlset = self.cfg.robot.size.xy + self.cfg.mpc.bound_margin
 
         ## get sdf network, TODO should be an api call instead
-        self.sdf = torch.jit.load(f'{COLPREDMPC_TMP_DIR}/{self.cfg.nn.sdf_weights}')
+        self.sdf = torch.jit.load(f'{default_data_dir()}/{self.cfg.nn.sdf_weights}')
         self.sdf.to(self.cfg.nn.vae_device)  # vae not sdf, since we want it on gpu is gpu is used
         self.sdf.eval()
 

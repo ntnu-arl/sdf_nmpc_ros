@@ -12,10 +12,10 @@ from nav_msgs.msg import Path, Odometry
 from trajectory_msgs.msg import MultiDOFJointTrajectory, MultiDOFJointTrajectoryPoint
 from std_srvs.srv import Trigger, SetBool
 
-from collision_predictor_mpc.utils.config import Config
-from collision_predictor_mpc.utils.reference import Waypoint, Ref
-from collision_predictor_mpc.ref_gen import RefGen
-from collision_predictor_mpc.utils.math import yaw2quat, quat2rot
+from sdf_nmpc.utils.config import Config
+from sdf_nmpc.utils.reference import Waypoint, Ref
+from sdf_nmpc.utils.math import yaw2quat, quat2rot
+from sdf_nmpc.ref_gen import RefGen
 
 
 class LowPassFilter:

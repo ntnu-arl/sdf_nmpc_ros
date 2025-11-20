@@ -5,7 +5,7 @@ import rclpy
 from rclpy.node import Node
 from ament_index_python.packages import get_package_share_directory
 
-from collision_predictor_mpc.ocp import build_solver
+from sdf_nmpc.ocp import build_solver
 
 
 if __name__ == '__main__':
