@@ -1,4 +1,4 @@
-name: "sim_camera"
+name: sim_camera  # defines name of generated code
 
 ## mission parameters
 ref:
@@ -41,13 +41,12 @@ ros:
         wps: [
             [1, 0, 2, 1.5], [2, 0, 2, -1.5], [3, 0, 2, 1.5]
         ]  # list of waypoints in ref_mode == cfg [m, m, m, rad]
-
         wp_tol: 0.8  # distance from wp below which it is considered explored and removed from the queue [m]
         joystick_lp_alpha: 0.9  # low-pass parameter for joystick cmd smoothing
     frames:
-        world: map
-        body: rmf
-        sensor: rmf/base_link/lidar
+        world: map  # world frame in ROS TF
+        body: rmf  # body frame in ROS TF
+        sensor: rmf/base_link/lidar  # sensor frame in ROS TF
 
 ## mpc parameters
 mpc:
@@ -89,7 +88,7 @@ mpc:
 robot:
     mass: 1.46
     inertia: [0.017, 0.018, 0.028]
-    alloc:
+    alloc:  # used only for RPM control
         cf: 0.02246
         ct: 0.00020673
         motors:
@@ -117,13 +116,10 @@ robot:
         az: 3
         gamma: 20  # maximum mass-normalized thrust
         torques: 0  # maximum inertia-normalized body torques
-        wp: 25
+        wp: 25  # maximum propeller velocity
 
 ## sensor
 sensor:
-    sensor_extrinsics:
-        position: [0.180, 0, -0.025]
-        orientation: [0, 0, 0]
     hfov: 0.7592
     vfov: 0.4903
     aspect_ratio: 1.778  # 16/9
