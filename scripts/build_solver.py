@@ -18,7 +18,7 @@ if __name__ == '__main__':
     if not cfg_file.endswith('.yaml'):
         cfg_file += '.yaml'
     cfg_path = os.path.join(
-        get_package_share_directory('sdf_nmpc_ros'),
+        get_package_share_directory('robot_bringup'),
         'config',
         cfg_file
     )
