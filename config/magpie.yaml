@@ -8,13 +8,13 @@ ref:
         enable: False
         dang_min: 1  # angle threshold to trigger stop and turn [rad]
     yaw_align_dmin: 0.15  # minimum distance under which yaw alignment is disabled [m]
-    vref: 1.0  # norm of reference velocity [m/s]
+    vref: 0.8  # norm of reference velocity [m/s]
     wzref: 1  # norm of reference yawrate [rad/s]
     zref: 2  # desired hovering z for takeoff [m]
 
 ## mission flags
 flags:
-    simulation: False  # sim or hardware experiment
+    simulation: True #False  # sim or hardware experiment
     enable_sdf: True  # enable collision prediction
     sdf_cost: False  # use sdf in cost
     sdf_constraint: True  # use sdf in constraints
@@ -53,7 +53,7 @@ mpc:
     model: att  # allowed models: acc, att, att_tau, rates, wrench, props
     weights:
         pos:    [5, 5, 3]  # px, py, pz 0
-        vel:    [5, 5, 5]  # vx, vy, vz 3
+        vel:    [5, 5, 8]  # vx, vy, vz 3
         att:    [50, 50, 20]  # roll, pitch, yaw
         rates:  [0, 0, 5]  # wx, wy, wz
         acc:    0.25  # typically small value, used to penalize acc or aacc if applicable
@@ -62,7 +62,7 @@ mpc:
         slack_brake:    None  # slack weights (L1, L2) on braking dist constraint
     N: 10  # nb of shooting nodes
     T: 1.5  # lenght of horizon [s]
-    bound_margin: 0.5  # safety margin for collision constraint [m]
+    bound_margin: 0.4 # 0.15  # safety margin for collision constraint [m]
     control_loop_time: 1 #10  # minimum control period [ms]
     uniform_dt: True  # dt is uniformly sampled as T/N, or nonuniform to have denser sampling for the first shooting_nodes
     nb_short_nodes: 2  # number of shooting node with dense nonuniform sampling
@@ -115,10 +115,10 @@ robot:
         vz: 3
         wx: 2
         wy: 2
-        wz: 1.0
+        wz: 0.7
         ax: 3
         ay: 3
-        az: 3
+        az: 1.5
         gamma: 15 #20  # maximum mass-normalized thrust
         torques: 0  # maximum inertia-normalized body torques
         wp: 25

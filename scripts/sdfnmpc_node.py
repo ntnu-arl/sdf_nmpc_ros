@@ -98,7 +98,7 @@ class SdfNmpcNode(Node):
         # st = time.time()
         fail_count = self.nmpc.solve()
         # et = time.time()
-        # print("MPC solve time: {:.1f} ms".format((et - st) * 1e3))
+        # print("MPC solve time: {:.4f} s".format((et - st)))
         self.failed = (fail_count == self.cfg.mpc.max_solver_fail)
 
     ## state machine
@@ -121,7 +121,10 @@ class SdfNmpcNode(Node):
                 self.nmpc.reset_latent()
                 self.get_logger().warn('observation timeout, disabling constraints')
 
+            # ts = time.time()
             self.control_iteration()
+            # te = time.time()
+            # print("Total control iteration time: {:.1f} ms".format((te - ts) * 1e3))
             if self.failed:
                 self.reset()
                 self.get_logger().error('NMPC FAILED, disabling constraints')
@@ -133,10 +136,13 @@ class SdfNmpcNode(Node):
         self.nmpc.set_x0(self.x0)
         if self.cfg.flags['simulation']:
             if self.cfg.ros.control_interface == 'acc':
+                # ts = time.time()
                 cmd_acc = self.nmpc.get_cmd_acc() if not self.failed else self.nmpc.cmd_acc_hover
                 msg = Twist()
                 msg.linear = Vector3(x=cmd_acc[0], y=cmd_acc[1], z=cmd_acc[2])
                 msg.angular = Vector3(x=0.0, y=0.0, z=cmd_acc[3])
+                # te = time.time()
+                # print("Publish cmd acc time: {:.6f} s".format((te - ts)))
             elif self.cfg.ros.control_interface == 'TRPYr':
                 cmd_TRPYr = self.nmpc.get_cmd_TRPYr() if not self.failed else self.nmpc.cmd_TRPYr_hover
                 msg = Quaternion(w=float(cmd_trpyr[0]), x=float(cmd_trpyr[1]), y=float(cmd_trpyr[2]), z=float(cmd_trpyr[3]))
