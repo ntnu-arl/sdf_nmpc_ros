@@ -175,20 +175,20 @@ class SdfNmpcNode(Node):
         ## neural sdf value
         # self.pub_sdf.publish(Float32(data=float(self.nmpc.eval(0)[0])))
 
-        if not self.failed:
-            ## predicted traj
-            msg_traj = Path()
-            msg_traj.header = Header(
-                stamp=self.get_clock().now().to_msg(),
-                frame_id=self.cfg.ros.frames.world
-            )
-            for p, q in self.nmpc.get_openloop_traj():
-                pose = PoseStamped()
-                pose.header = msg_traj.header
-                pose.pose.position = Point(x=p[0], y=p[1], z=p[2])
-                pose.pose.orientation = Quaternion(w=q[0], x=q[1], y=q[2], z=q[3])
-                msg_traj.poses.append(pose)
-            self.pub_cmd_traj.publish(msg_traj)
+        # if not self.failed:
+        #     ## predicted traj
+        #     msg_traj = Path()
+        #     msg_traj.header = Header(
+        #         stamp=self.get_clock().now().to_msg(),
+        #         frame_id=self.cfg.ros.frames.world
+        #     )
+        #     for p, q in self.nmpc.get_openloop_traj():
+        #         pose = PoseStamped()
+        #         pose.header = msg_traj.header
+        #         pose.pose.position = Point(x=p[0], y=p[1], z=p[2])
+        #         pose.pose.orientation = Quaternion(w=q[0], x=q[1], y=q[2], z=q[3])
+        #         msg_traj.poses.append(pose)
+        #     self.pub_cmd_traj.publish(msg_traj)
 
             ## command
             # cmd_acc = self.nmpc.get_cmd_acc() if not self.failed else self.nmpc.cmd_acc_hover
