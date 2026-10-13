@@ -111,6 +111,7 @@ class SdfNmpcNode(Node):
                 self.ref = None
                 self.running = False
                 self.get_logger().warn('reference timeout, resuming to idle mode')
+                return
             elif self.sdf_flag and now > self.t_img + self.cfg.ros.timeout_img:
                 self.sdf_flag = False
                 self.nmpc.reset_latent()
